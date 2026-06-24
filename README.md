@@ -1,4 +1,3 @@
-# SmartCalculator
 <p align="center">
   <img src="Assets/SmartCalculatorLogo.png" alt="SmartCalculator Logo" width="120">
 </p>
