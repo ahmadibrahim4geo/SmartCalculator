@@ -1,4 +1,13 @@
 # SmartCalculator
+<p align="center">
+  <img src="Assets/SmartCalculatorLogo.png" alt="SmartCalculator Logo" width="120">
+</p>
+
+<h1 align="center">SmartCalculator</h1>
+
+<p align="center">
+  Free and open-source Windows scientific calculator built with WPF .NET 8.
+</p>
 
 A premium handheld-style scientific calculator for Windows Desktop.
 
