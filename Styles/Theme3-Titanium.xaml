@@ -1,0 +1,447 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:vm="clr-namespace:SmartCalculator.ViewModels">
+
+    <!-- ============== THEME 3 — SOFT DARK TITANIUM ============== -->
+    <!-- Body — dark titanium gray -->
+    <Color x:Key="BodyOuterColor">#1F2125</Color>
+    <Color x:Key="BodyMainColor">#282A2F</Color>
+    <Color x:Key="BodyMain2Color">#222428</Color>
+    <Color x:Key="BodyPanelColor">#303237</Color>
+    <Color x:Key="BodyBorderColor">#3E4046</Color>
+
+    <!-- Science keys — dark gray with subtle warmth -->
+    <Color x:Key="ScienceTopColor">#36383D</Color>
+    <Color x:Key="ScienceMidColor">#303236</Color>
+    <Color x:Key="ScienceBottomColor">#292B2F</Color>
+    <SolidColorBrush x:Key="ScienceBorderBrush" Color="#474950"/>
+
+    <!-- Number keys — medium gray, not light silver -->
+    <Color x:Key="NumberTopColor">#4A4C51</Color>
+    <Color x:Key="NumberMidColor">#43454A</Color>
+    <Color x:Key="NumberBottomColor">#3C3E42</Color>
+    <SolidColorBrush x:Key="NumberBorderBrush" Color="#56585E"/>
+    <SolidColorBrush x:Key="NumberTextBrush" Color="#ECEEF0"/>
+
+    <!-- Operator keys — softly contrasting -->
+    <Color x:Key="OperatorTopColor">#525459</Color>
+    <Color x:Key="OperatorMidColor">#4B4D52</Color>
+    <Color x:Key="OperatorBottomColor">#44464A</Color>
+    <SolidColorBrush x:Key="OperatorBorderBrush" Color="#5E6066"/>
+    <SolidColorBrush x:Key="OperatorTextBrush" Color="#F2F4F6"/>
+
+    <!-- Orange controls — reduced, softer -->
+    <Color x:Key="OrangeTopColor">#D4833A</Color>
+    <Color x:Key="OrangeMidColor">#C4732A</Color>
+    <Color x:Key="OrangeBottomColor">#B06320</Color>
+    <SolidColorBrush x:Key="OrangeBorderBrush" Color="#8A4E18"/>
+    <SolidColorBrush x:Key="OrangeTextBrush" Color="#FFFFFF"/>
+
+    <!-- Navy/oval keys — warm slate -->
+    <Color x:Key="NavyTopColor">#40444D</Color>
+    <Color x:Key="NavyMidColor">#383C44</Color>
+    <Color x:Key="NavyBottomColor">#30333A</Color>
+    <SolidColorBrush x:Key="NavyBorderBrush" Color="#50545E"/>
+
+    <!-- Labels -->
+    <SolidColorBrush x:Key="ShiftLabelBrush" Color="#FFC857"/>
+    <SolidColorBrush x:Key="AlphaLabelBrush" Color="#FF5C66"/>
+    <SolidColorBrush x:Key="KeyTextBrush" Color="#EDEFF1"/>
+    <SolidColorBrush x:Key="SubTextBrush" Color="#B6B8BC"/>
+
+    <!-- LCD -->
+    <Color x:Key="LCDShellColor">#131814</Color>
+    <Color x:Key="LCDRingColor">#4A594A</Color>
+    <Color x:Key="LCDBgColor">#C8D8C4</Color>
+    <Color x:Key="LCDBg2Color">#B8C8B4</Color>
+    <SolidColorBrush x:Key="LCDTextBrush" Color="#1C241C"/>
+    <Color x:Key="LCDMutedColor">#62705F</Color>
+
+    <!-- ============== BRUSHES ============== -->
+    <LinearGradientBrush x:Key="BodyGradient" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#2E3035" Offset="0"/>
+        <GradientStop Color="{StaticResource BodyMainColor}" Offset="0.45"/>
+        <GradientStop Color="{StaticResource BodyMain2Color}" Offset="1"/>
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="ScienceKeyGradient" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="{StaticResource ScienceTopColor}" Offset="0"/>
+        <GradientStop Color="{StaticResource ScienceMidColor}" Offset="0.48"/>
+        <GradientStop Color="{StaticResource ScienceBottomColor}" Offset="1"/>
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="NumberKeyGradient" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="{StaticResource NumberTopColor}" Offset="0"/>
+        <GradientStop Color="{StaticResource NumberMidColor}" Offset="0.48"/>
+        <GradientStop Color="{StaticResource NumberBottomColor}" Offset="1"/>
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="OperatorKeyGradient" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="{StaticResource OperatorTopColor}" Offset="0"/>
+        <GradientStop Color="{StaticResource OperatorMidColor}" Offset="0.48"/>
+        <GradientStop Color="{StaticResource OperatorBottomColor}" Offset="1"/>
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="ControlKeyGradient" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="{StaticResource OrangeTopColor}" Offset="0"/>
+        <GradientStop Color="{StaticResource OrangeMidColor}" Offset="0.48"/>
+        <GradientStop Color="{StaticResource OrangeBottomColor}" Offset="1"/>
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="NavyKeyGradient" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="{StaticResource NavyTopColor}" Offset="0"/>
+        <GradientStop Color="{StaticResource NavyMidColor}" Offset="0.50"/>
+        <GradientStop Color="{StaticResource NavyBottomColor}" Offset="1"/>
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="LCDBackground" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#D8E5D3" Offset="0"/>
+        <GradientStop Color="{StaticResource LCDBgColor}" Offset="0.46"/>
+        <GradientStop Color="{StaticResource LCDBg2Color}" Offset="1"/>
+    </LinearGradientBrush>
+
+    <!-- ============== BASE BUTTON STYLE ============== -->
+    <Style x:Key="KeyBaseStyle" TargetType="Button">
+        <Setter Property="Foreground" Value="{StaticResource KeyTextBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="UseLayoutRounding" Value="True"/>
+        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        <Setter Property="FontFamily" Value="Segoe UI"/>
+        <Setter Property="FontWeight" Value="ExtraBold"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect BlurRadius="2" ShadowDepth="1" Color="#000000" Opacity="0.28" Direction="270"/>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ============== COMMON KEY TEMPLATE ============== -->
+    <ControlTemplate x:Key="CalculatorKeyTemplate" TargetType="Button">
+        <Border x:Name="border"
+                CornerRadius="9"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                Background="{TemplateBinding Background}"
+                BorderThickness="{TemplateBinding BorderThickness}">
+            <Grid>
+                <Border VerticalAlignment="Top" Height="14" IsHitTestVisible="False"
+                        Margin="2,1,2,0" CornerRadius="7,7,4,4"
+                        Background="#28FFFFFF"/>
+                <Grid Margin="3,0,3,2">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid Grid.Row="0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0"
+                                   Text="{Binding Path=(vm:ButtonExtensions.SecondaryLabel), RelativeSource={RelativeSource TemplatedParent}}"
+                                   Foreground="#FFC857" FontSize="9" FontWeight="ExtraBold"
+                                   HorizontalAlignment="Left"
+                                   Margin="2,3,0,0"
+                                   TextWrapping="Wrap"
+                                   TextTrimming="None"/>
+                        <TextBlock Grid.Column="1"
+                                   Text="{Binding Path=(vm:ButtonExtensions.AlphaLabel), RelativeSource={RelativeSource TemplatedParent}}"
+                                   Foreground="#FF5C66" FontSize="9" FontWeight="ExtraBold"
+                                   HorizontalAlignment="Right"
+                                   Margin="0,3,2,0"
+                                   TextWrapping="Wrap"
+                                   TextTrimming="None"/>
+                    </Grid>
+                    <ContentPresenter Grid.Row="1"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"
+                                      RecognizesAccessKey="False"
+                                      Margin="0,1,0,2"/>
+                </Grid>
+            </Grid>
+        </Border>
+        <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Trigger.EnterActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetName="border" Storyboard.TargetProperty="Opacity" To="0.88" Duration="0:0:0.08"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </Trigger.EnterActions>
+                <Trigger.ExitActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetName="border" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.08"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </Trigger.ExitActions>
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+                <Setter Property="RenderTransform">
+                    <Setter.Value>
+                        <TranslateTransform Y="1"/>
+                    </Setter.Value>
+                </Setter>
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <!-- ============== SIMPLE KEY TEMPLATE ============== -->
+    <ControlTemplate x:Key="SimpleKeyTemplate" TargetType="Button">
+        <Border x:Name="border"
+                CornerRadius="9"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                Background="{TemplateBinding Background}"
+                BorderThickness="{TemplateBinding BorderThickness}">
+            <Grid>
+                <Border VerticalAlignment="Top" Height="14" IsHitTestVisible="False"
+                        Margin="2,1,2,0" CornerRadius="7,7,4,4"
+                        Background="#28FFFFFF"/>
+                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                  RecognizesAccessKey="False" Margin="0,2,0,2"/>
+            </Grid>
+        </Border>
+        <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Trigger.EnterActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetName="border" Storyboard.TargetProperty="Opacity" To="0.88" Duration="0:0:0.08"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </Trigger.EnterActions>
+                <Trigger.ExitActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetName="border" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.08"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </Trigger.ExitActions>
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+                <Setter Property="RenderTransform">
+                    <Setter.Value>
+                        <TranslateTransform Y="1"/>
+                    </Setter.Value>
+                </Setter>
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <!-- ============== OVAL BUTTON TEMPLATE ============== -->
+    <ControlTemplate x:Key="OvalButtonTemplate" TargetType="Button">
+        <Grid Width="43" Height="29">
+            <Border x:Name="border"
+                    CornerRadius="14.5"
+                    BorderBrush="{StaticResource NavyBorderBrush}"
+                    Background="{StaticResource NavyKeyGradient}"
+                    BorderThickness="1"
+                    Effect="{x:Null}">
+                <Border CornerRadius="13" BorderThickness="1" BorderBrush="#20FFFFFF"
+                        Margin="1.5" IsHitTestVisible="False"/>
+            </Border>
+            <Border VerticalAlignment="Top" Height="12" IsHitTestVisible="False"
+                    Margin="3,1,3,0" CornerRadius="10,10,5,5"
+                    Background="#20FFFFFF" Opacity="0.7"/>
+        </Grid>
+        <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Trigger.EnterActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetName="border" Storyboard.TargetProperty="Opacity" To="0.82" Duration="0:0:0.08"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </Trigger.EnterActions>
+                <Trigger.ExitActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetName="border" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.08"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </Trigger.ExitActions>
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+                <Setter Property="RenderTransform">
+                    <Setter.Value>
+                        <TranslateTransform Y="1"/>
+                    </Setter.Value>
+                </Setter>
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <!-- ============== KEY STYLES ============== -->
+    <Style x:Key="ScienceKeyStyle" TargetType="Button" BasedOn="{StaticResource KeyBaseStyle}">
+        <Setter Property="Template" Value="{StaticResource CalculatorKeyTemplate}"/>
+        <Setter Property="Background" Value="{StaticResource ScienceKeyGradient}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource ScienceBorderBrush}"/>
+        <Setter Property="Foreground" Value="{StaticResource KeyTextBrush}"/>
+        <Setter Property="FontSize" Value="16"/>
+    </Style>
+
+    <Style x:Key="NumberKeyStyle" TargetType="Button" BasedOn="{StaticResource KeyBaseStyle}">
+        <Setter Property="Template" Value="{StaticResource CalculatorKeyTemplate}"/>
+        <Setter Property="Background" Value="{StaticResource NumberKeyGradient}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource NumberBorderBrush}"/>
+        <Setter Property="Foreground" Value="{StaticResource NumberTextBrush}"/>
+        <Setter Property="FontSize" Value="23"/>
+    </Style>
+
+    <Style x:Key="OperatorKeyStyle" TargetType="Button" BasedOn="{StaticResource KeyBaseStyle}">
+        <Setter Property="Template" Value="{StaticResource CalculatorKeyTemplate}"/>
+        <Setter Property="Background" Value="{StaticResource OperatorKeyGradient}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource OperatorBorderBrush}"/>
+        <Setter Property="Foreground" Value="{StaticResource OperatorTextBrush}"/>
+        <Setter Property="FontSize" Value="23"/>
+    </Style>
+
+    <Style x:Key="ControlKeyStyle" TargetType="Button" BasedOn="{StaticResource KeyBaseStyle}">
+        <Setter Property="Template" Value="{StaticResource CalculatorKeyTemplate}"/>
+        <Setter Property="Background" Value="{StaticResource ControlKeyGradient}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource OrangeBorderBrush}"/>
+        <Setter Property="Foreground" Value="{StaticResource OrangeTextBrush}"/>
+        <Setter Property="FontSize" Value="19"/>
+    </Style>
+
+    <Style x:Key="OvalKeyStyle" TargetType="Button" BasedOn="{StaticResource KeyBaseStyle}">
+        <Setter Property="Template" Value="{StaticResource OvalButtonTemplate}"/>
+        <Setter Property="Effect" Value="{x:Null}"/>
+    </Style>
+
+    <Style x:Key="SimpleScienceKeyStyle" TargetType="Button" BasedOn="{StaticResource KeyBaseStyle}">
+        <Setter Property="Template" Value="{StaticResource SimpleKeyTemplate}"/>
+        <Setter Property="Background" Value="{StaticResource ScienceKeyGradient}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource ScienceBorderBrush}"/>
+        <Setter Property="Foreground" Value="{StaticResource KeyTextBrush}"/>
+        <Setter Property="FontSize" Value="16"/>
+    </Style>
+
+    <!-- ============== DPAD STYLES ============== -->
+    <Style x:Key="DpadButtonStyle" TargetType="Button">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="#F4F6F9"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontWeight" Value="ExtraBold"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border Background="Transparent">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                          RecognizesAccessKey="False"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ============== LCD STYLES ============== -->
+    <Style x:Key="LcdStatusText" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource LCDTextBrush}"/>
+        <Setter Property="FontSize" Value="10"/>
+        <Setter Property="FontWeight" Value="ExtraBold"/>
+        <Setter Property="FontFamily" Value="Consolas"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+
+    <!-- ============== PIN BUTTON STYLE ============== -->
+    <Style x:Key="PinButtonStyle" TargetType="Button">
+        <Setter Property="Width" Value="22"/>
+        <Setter Property="Height" Value="22"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="Foreground" Value="#FFFFFF"/>
+        <Setter Property="Background" Value="#26292D"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border" CornerRadius="11" Background="{TemplateBinding Background}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                          RecognizesAccessKey="False"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="#555860"/>
+                            <Setter Property="Foreground" Value="#FFFFFF"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ============== CLOSE BUTTON STYLE ============== -->
+    <Style x:Key="CloseButtonStyle" TargetType="Button">
+        <Setter Property="Width" Value="22"/>
+        <Setter Property="Height" Value="22"/>
+        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="Foreground" Value="#FFFFFF"/>
+        <Setter Property="Background" Value="#26292D"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border" CornerRadius="11" Background="{TemplateBinding Background}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                          RecognizesAccessKey="False"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="#555860"/>
+                            <Setter Property="Foreground" Value="#FFFFFF"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ============== PLACEHOLDER BOX STYLE ============== -->
+    <Style x:Key="PlaceholderBoxStyle" TargetType="Border">
+        <Setter Property="Width" Value="9"/>
+        <Setter Property="Height" Value="9"/>
+        <Setter Property="BorderThickness" Value="1.5"/>
+        <Setter Property="CornerRadius" Value="1.5"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+    </Style>
+
+    <!-- ============== DARK TOOLTIP STYLE ============== -->
+    <Style TargetType="ToolTip">
+        <Setter Property="Background" Value="#2D3035"/>
+        <Setter Property="Foreground" Value="#FFFFFF"/>
+        <Setter Property="BorderBrush" Value="#454A52"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="FontFamily" Value="Segoe UI"/>
+        <Setter Property="HasDropShadow" Value="False"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToolTip">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="4" Padding="8,4,8,4">
+                        <TextBlock Text="{TemplateBinding Content}"
+                                   Foreground="{TemplateBinding Foreground}"
+                                   FontSize="{TemplateBinding FontSize}"
+                                   FontFamily="{TemplateBinding FontFamily}"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

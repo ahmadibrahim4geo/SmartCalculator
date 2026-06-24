@@ -1,0 +1,35 @@
+# Build outputs
+bin/
+obj/
+_wpftmp*/
+*.user
+*.suo
+*.log
+
+# .NET
+*.cache
+*.nupkg
+
+# Test runners
+test-runners/bin/
+test-runners/obj/
+
+# Legacy publish (not the official release folder)
+publish/
+
+# Release binaries (keep metadata files like RELEASE_NOTES, SHA256SUMS)
+release/**/*.zip
+release/**/*.exe
+release/**/smoke-test/
+
+# IDE
+.vs/
+*.sln.ide/
+.vscode/
+
+# Safety archive (pre-cleanup backups)
+_archive_before_github_release_cleanup/
+
+# OS
+Thumbs.db
+.DS_Store

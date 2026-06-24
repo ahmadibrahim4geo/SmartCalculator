@@ -1,0 +1,2 @@
+0ef24d2ae23521ca5db9e21b147aec250bdd2af94a7f21b23a5d8e7e5b51adac  SmartCalculator_v1.0.0_FrameworkDependent.zip
+0d125da15327e92c05807db9e70a80d99f81116283d7e4bbe2f5f73116328861  SmartCalculator_v1.0.0_SelfContained_win-x64.zip
