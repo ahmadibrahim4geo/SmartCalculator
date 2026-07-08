@@ -1,3 +1,4 @@
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -71,6 +72,58 @@ namespace SmartCalculator
             }
         }
 
+        private void ListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (sender is ListBox listBox && listBox.SelectedItem != null)
+            {
+                listBox.ScrollIntoView(listBox.SelectedItem);
+            }
+        }
+
+        private System.Windows.Threading.DispatcherTimer? _longPressTimer;
+        private bool _isLongPress = false;
+
+        private void ThemeButton_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            _isLongPress = false;
+            if (_longPressTimer == null)
+            {
+                _longPressTimer = new System.Windows.Threading.DispatcherTimer
+                {
+                    Interval = TimeSpan.FromMilliseconds(500)
+                };
+                _longPressTimer.Tick += (s, ev) =>
+                {
+                    _longPressTimer.Stop();
+                    _isLongPress = true;
+                    var vm = DataContext as CalculatorViewModel;
+                    if (vm != null)
+                    {
+                        vm.ShowThemesMenu = true;
+                    }
+                };
+            }
+            _longPressTimer.Start();
+        }
+
+        private void ThemeButton_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            if (_longPressTimer != null && _longPressTimer.IsEnabled)
+            {
+                _longPressTimer.Stop();
+            }
+
+            if (!_isLongPress)
+            {
+                var vm = DataContext as CalculatorViewModel;
+                if (vm != null && vm.InputCommand.CanExecute("THEME_CYCLE"))
+                {
+                    vm.InputCommand.Execute("THEME_CYCLE");
+                }
+            }
+            _isLongPress = false;
+        }
+
         private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             var vm = DataContext as CalculatorViewModel;
@@ -102,13 +155,24 @@ namespace SmartCalculator
             else if (k == Key.OemOpenBrackets && (Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift) param = "(";
             else if (k == Key.OemCloseBrackets && (Keyboard.Modifiers & ModifierKeys.Shift) != ModifierKeys.Shift) param = "]";
             else if (k == Key.OemCloseBrackets && (Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift) param = ")";
-            else if (k == Key.Enter || k == Key.Return) param = "=";
+            else if (k == Key.Enter || k == Key.Return)
+            {
+                if (vm.ShowThemesMenu || vm.ShowConstants || vm.ShowConversions)
+                {
+                    param = "NAV";
+                    DpadNav.Tag = "KeyboardPressed";
+                }
+                else
+                {
+                    param = "=";
+                }
+            }
             else if (k == Key.Back) param = "DEL";
             else if (k == Key.Escape) param = "AC";
-            else if (k == Key.Up) param = "UP";
-            else if (k == Key.Down) param = "DOWN";
-            else if (k == Key.Left) param = "LEFT";
-            else if (k == Key.Right) param = "RIGHT";
+            else if (k == Key.Up) { param = "UP"; DpadUp.Tag = "KeyboardPressed"; }
+            else if (k == Key.Down) { param = "DOWN"; DpadDown.Tag = "KeyboardPressed"; }
+            else if (k == Key.Left) { param = "LEFT"; DpadLeft.Tag = "KeyboardPressed"; }
+            else if (k == Key.Right) { param = "RIGHT"; DpadRight.Tag = "KeyboardPressed"; }
 
             // Letter keys for HEX input in BASE-N mode (A-F) or ALPHA variable entry
             if (param == null)
@@ -135,6 +199,44 @@ namespace SmartCalculator
                 if (vm.InputCommand.CanExecute(param))
                     vm.InputCommand.Execute(param);
                 e.Handled = true;
+            }
+        }
+
+        private void Window_PreviewKeyUp(object sender, KeyEventArgs e)
+        {
+            Key k = e.Key;
+            if (k == Key.Up) DpadUp.Tag = null;
+            else if (k == Key.Down) DpadDown.Tag = null;
+            else if (k == Key.Left) DpadLeft.Tag = null;
+            else if (k == Key.Right) DpadRight.Tag = null;
+            else if (k == Key.Enter || k == Key.Return) DpadNav.Tag = null;
+        }
+
+        private void HelpButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                string chmPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Help.chm");
+                if (System.IO.File.Exists(chmPath))
+                {
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(chmPath) { UseShellExecute = true });
+                }
+                else
+                {
+                    string fallbackPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Help.html");
+                    if (System.IO.File.Exists(fallbackPath))
+                    {
+                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(fallbackPath) { UseShellExecute = true });
+                    }
+                    else
+                    {
+                        MessageBox.Show("Help file (Help.chm or Help.html) not found in the application directory.", "Help Not Found", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Could not open help file: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

@@ -117,6 +117,32 @@ public class BaseNService
 
     public bool IsBaseActive => CurrentBase != NumBase.DEC;
 
+    public static string ToSignedBase(long value, NumBase targetBase)
+    {
+        if (value == 0) return "0";
+        if (value >= 0)
+        {
+            return targetBase switch
+            {
+                NumBase.HEX => value.ToString("X"),
+                NumBase.BIN => Convert.ToString(value, 2),
+                NumBase.OCT => Convert.ToString(value, 8),
+                _ => value.ToString()
+            };
+        }
+        else
+        {
+            long absVal = Math.Abs(value);
+            return "-" + (targetBase switch
+            {
+                NumBase.HEX => absVal.ToString("X"),
+                NumBase.BIN => Convert.ToString(absVal, 2),
+                NumBase.OCT => Convert.ToString(absVal, 8),
+                _ => absVal.ToString()
+            });
+        }
+    }
+
     // Bitwise operations (operate on long integers)
     public static long And(long a, long b) => a & b;
     public static long Or(long a, long b) => a | b;

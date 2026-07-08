@@ -12,10 +12,26 @@ A premium handheld-style scientific calculator for Windows Desktop.
 
 Built with WPF and .NET 8 — offline, portable, calculator-only.
 
+## What's New in v2.0.0 🚀
+
+- **100 Gorgeous Visual Themes**: Cycle through a vast collection of carefully crafted color palettes, or hold down the palette `🎨` button to select directly from the on-screen scrollable themes list.
+- **Tactile Dpad Sync**: Arrow keys (`▲`, `▼`, `◀`, `▶`) and `NAV` buttons physically animate and depress in real-time when pressed on your keyboard, giving responsive, tactile feedback.
+- **Built-in Help Manual**: A dedicated `Help` button has been added below the Close button. It launches a local compiled help file (`Help.chm`) or falls back to an interactive user guide (`Help.html`) in your web browser.
+- **English Tooltips**: Clear, descriptive English tooltips on all primary and secondary functional keys (e.g. `SHIFT`, `ALPHA`, `MODE`, `ON`, `DEL`, `AC`, `Ans`, `=`, and the Dpad keys).
+- **dms Key Alignment**: The Degrees/Minutes/Seconds key has been updated to lowercase `"dms"` and aligned perfectly with adjacent keys (`sin`, `cos`, `tan`).
+
+## Download & Releases
+
+You can download the compiled binaries directly from the [release/v2.0.0/](file:///r:/My%20Software/SmartCalculator/release/v2.0.0) directory:
+
+- **Setup Installer (Recommended)**: [SmartCalculator_Setup_v2.0.0.exe](file:///r:/My%20Software/SmartCalculator/release/v2.0.0/SmartCalculator_Setup_v2.0.0.exe) - Standard Windows installer that configures shortcuts and installs the Help manual.
+- **Portable ZIP**: [SmartCalculator_Portable_v2.0.0.zip](file:///r:/My%20Software/SmartCalculator/release/v2.0.0/SmartCalculator_Portable_v2.0.0.zip) - Extract and run directly without any installation.
+
+---
+
 ## Requirements
 
 - Windows 7 or later
-- No installation required (portable EXE)
 - No internet connection needed
 - .NET 8 Desktop Runtime required (for framework-dependent package)
 

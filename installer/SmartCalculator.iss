@@ -2,7 +2,7 @@
 ; Build with: ISCC.exe SmartCalculator.iss
 
 #define MyAppName "SmartCalculator"
-#define MyAppVersion "1.0.0"
+#define MyAppVersion "2.0.0"
 #define MyAppPublisher "Ahmad Ibrahim"
 #define MyAppURL "https://github.com/ahmadibrahim/SmartCalculator"
 #define MyAppExeName "SmartCalculator.exe"
@@ -19,8 +19,8 @@ DefaultDirName={autopf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 UninstallDisplayIcon={app}\{#MyAppExeName}
 UninstallDisplayName={#MyAppName} {#MyAppVersion}
-OutputDir=..\release\v1.0.0
-OutputBaseFilename=SmartCalculator_Setup_v1.0.0
+OutputDir=..\release\v2.0.0
+OutputBaseFilename=SmartCalculator_Setup_v2.0.0
 SetupIconFile=..\Assets\AppIcon.ico
 Compression=lzma2
 SolidCompression=yes
@@ -38,6 +38,9 @@ Name: "desktopicon"; Description: "Create a &desktop shortcut"; GroupDescription
 
 [Files]
 Source: "..\bin\Release\net8.0-windows\win-x64\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\Help.html"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\HELP.md"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\Help.chm"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
 Source: "..\README.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\LICENSE"; DestDir: "{app}"; Flags: ignoreversion
 

@@ -2,52 +2,52 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:vm="clr-namespace:SmartCalculator.ViewModels">
 
-    <!-- ============== THEME — AMOLED DARK SCIENTIFIC ============== -->
+    <!-- ============== THEME — THEME ============== -->
     <!-- Body — near-black AMOLED -->
-    <Color x:Key="BodyOuterColor">#050606</Color>
-    <Color x:Key="BodyMainColor">#111315</Color>
-    <Color x:Key="BodyMain2Color">#0D0F11</Color>
-    <Color x:Key="BodyPanelColor">#151819</Color>
-    <Color x:Key="BodyBorderColor">#1D2123</Color>
+    <Color x:Key="BodyOuterColor">#0F1011</Color>
+    <Color x:Key="BodyMainColor">#191B1D</Color>
+    <Color x:Key="BodyMain2Color">#141618</Color>
+    <Color x:Key="BodyPanelColor">#1F2225</Color>
+    <Color x:Key="BodyBorderColor">#2C2F33</Color>
 
     <!-- Science keys — dark charcoal -->
-    <Color x:Key="ScienceTopColor">#171B1C</Color>
-    <Color x:Key="ScienceMidColor">#141819</Color>
-    <Color x:Key="ScienceBottomColor">#111516</Color>
-    <SolidColorBrush x:Key="ScienceBorderBrush" Color="#252B2D"/>
+    <Color x:Key="ScienceTopColor">#1F2225</Color>
+    <Color x:Key="ScienceMidColor">#1A1D20</Color>
+    <Color x:Key="ScienceBottomColor">#151719</Color>
+    <SolidColorBrush x:Key="ScienceBorderBrush" Color="#2C2F33"/>
 
     <!-- Number keys — dark charcoal (same as science) -->
-    <Color x:Key="NumberTopColor">#171B1C</Color>
-    <Color x:Key="NumberMidColor">#141819</Color>
-    <Color x:Key="NumberBottomColor">#111516</Color>
-    <SolidColorBrush x:Key="NumberBorderBrush" Color="#252B2D"/>
-    <SolidColorBrush x:Key="NumberTextBrush" Color="#F4F6F7"/>
+    <Color x:Key="NumberTopColor">#191B1D</Color>
+    <Color x:Key="NumberMidColor">#141618</Color>
+    <Color x:Key="NumberBottomColor">#0F1011</Color>
+    <SolidColorBrush x:Key="NumberBorderBrush" Color="#252729"/>
+    <SolidColorBrush x:Key="NumberTextBrush" Color="#E2E8F0"/>
 
     <!-- Operator keys — slightly lighter charcoal -->
-    <Color x:Key="OperatorTopColor">#1D2224</Color>
-    <Color x:Key="OperatorMidColor">#191E20</Color>
-    <Color x:Key="OperatorBottomColor">#161A1C</Color>
-    <SolidColorBrush x:Key="OperatorBorderBrush" Color="#252B2D"/>
-    <SolidColorBrush x:Key="OperatorTextBrush" Color="#F4F6F7"/>
+    <Color x:Key="OperatorTopColor">#2A2D31</Color>
+    <Color x:Key="OperatorMidColor">#222528</Color>
+    <Color x:Key="OperatorBottomColor">#1C1E20</Color>
+    <SolidColorBrush x:Key="OperatorBorderBrush" Color="#2C2F33"/>
+    <SolidColorBrush x:Key="OperatorTextBrush" Color="#E2E8F0"/>
 
     <!-- DEL/AC — cyan/teal -->
-    <Color x:Key="OrangeTopColor">#20AFA2</Color>
-    <Color x:Key="OrangeMidColor">#1B9A8E</Color>
-    <Color x:Key="OrangeBottomColor">#16857B</Color>
-    <SolidColorBrush x:Key="OrangeBorderBrush" Color="#20AFA2"/>
+    <Color x:Key="OrangeTopColor">#E63946</Color>
+    <Color x:Key="OrangeMidColor">#C92A36</Color>
+    <Color x:Key="OrangeBottomColor">#A81E29</Color>
+    <SolidColorBrush x:Key="OrangeBorderBrush" Color="#E63946"/>
     <SolidColorBrush x:Key="OrangeTextBrush" Color="#FFFFFF"/>
 
     <!-- Oval keys — dark charcoal -->
-    <Color x:Key="NavyTopColor">#1D2224</Color>
-    <Color x:Key="NavyMidColor">#191E20</Color>
-    <Color x:Key="NavyBottomColor">#141819</Color>
-    <SolidColorBrush x:Key="NavyBorderBrush" Color="#252B2D"/>
+    <Color x:Key="NavyTopColor">#2A2D31</Color>
+    <Color x:Key="NavyMidColor">#222528</Color>
+    <Color x:Key="NavyBottomColor">#1C1E20</Color>
+    <SolidColorBrush x:Key="NavyBorderBrush" Color="#2C2F33"/>
 
     <!-- Labels -->
     <SolidColorBrush x:Key="ShiftLabelBrush" Color="#FFD84D"/>
     <SolidColorBrush x:Key="AlphaLabelBrush" Color="#E34B57"/>
-    <SolidColorBrush x:Key="KeyTextBrush" Color="#F4F6F7"/>
-    <SolidColorBrush x:Key="SubTextBrush" Color="#B8C0C4"/>
+    <SolidColorBrush x:Key="KeyTextBrush" Color="#E2E8F0"/>
+    <SolidColorBrush x:Key="SubTextBrush" Color="#A0AEC0"/>
 
     <!-- LCD — classic green scientific -->
     <Color x:Key="LCDShellColor">#141915</Color>
@@ -333,10 +333,85 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Border Background="Transparent">
-                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
-                                          RecognizesAccessKey="False"/>
+                    <Border x:Name="btnBorder" Background="Transparent" CornerRadius="8" Padding="6,4">
+                        <ContentPresenter x:Name="content" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                          RecognizesAccessKey="False">
+                            <ContentPresenter.RenderTransform>
+                                <ScaleTransform ScaleX="1" ScaleY="1"/>
+                            </ContentPresenter.RenderTransform>
+                            <ContentPresenter.RenderTransformOrigin>
+                                <Point X="0.5" Y="0.5"/>
+                            </ContentPresenter.RenderTransformOrigin>
+                        </ContentPresenter>
                     </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="btnBorder" Property="Background" Value="#15FFFFFF"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="btnBorder" Property="Background" Value="#30FFFFFF"/>
+                            <Setter TargetName="content" Property="RenderTransform">
+                                <Setter.Value>
+                                    <ScaleTransform ScaleX="0.80" ScaleY="0.80"/>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="Tag" Value="KeyboardPressed">
+                            <Setter TargetName="btnBorder" Property="Background" Value="#30FFFFFF"/>
+                            <Setter TargetName="content" Property="RenderTransform">
+                                <Setter.Value>
+                                    <ScaleTransform ScaleX="0.80" ScaleY="0.80"/>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="DpadCenterButtonStyle" TargetType="Button">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="BorderBrush" Value="#18FFFFFF"/>
+        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border" Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="21">
+                        <ContentPresenter x:Name="content" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <ContentPresenter.RenderTransform>
+                                <ScaleTransform ScaleX="1" ScaleY="1"/>
+                            </ContentPresenter.RenderTransform>
+                            <ContentPresenter.RenderTransformOrigin>
+                                <Point X="0.5" Y="0.5"/>
+                            </ContentPresenter.RenderTransformOrigin>
+                        </ContentPresenter>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="#15FFFFFF"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter Property="Background" Value="#30FFFFFF"/>
+                            <Setter TargetName="content" Property="RenderTransform">
+                                <Setter.Value>
+                                    <ScaleTransform ScaleX="0.85" ScaleY="0.85"/>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="Tag" Value="KeyboardPressed">
+                            <Setter Property="Background" Value="#30FFFFFF"/>
+                            <Setter TargetName="content" Property="RenderTransform">
+                                <Setter.Value>
+                                    <ScaleTransform ScaleX="0.85" ScaleY="0.85"/>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

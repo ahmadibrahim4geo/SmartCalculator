@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using SmartCalculator.Models;
@@ -18,6 +19,8 @@ public class CalculatorViewModel : INotifyPropertyChanged
     private readonly StatisticsService _stats = new();
     private readonly BaseNService _baseN = new();
     private readonly TableService _table = new();
+    private readonly System.Windows.Threading.DispatcherTimer _blinkTimer;
+    private bool _showCaret = true;
     private string _expression = "";
     private string _resultText = "0";
     private SolidColorBrush _resultBrush = new(Color.FromRgb(0x18, 0x20, 0x18));
@@ -47,7 +50,19 @@ public class CalculatorViewModel : INotifyPropertyChanged
     private double _lastNumericResult;
     private long _fracNumerator;
     private long _fracDenominator;
-    private string _fracInlineText = "";
+    private string _fracSignDisplay = "";
+    private bool _showFracWhole;
+    private string _fracWholeDisplay = "";
+    private string _baseNDecDisplay = "";
+    private string _baseNHexDisplay = "";
+    private string _baseNBinDisplay = "";
+    private string _baseNOctDisplay = "";
+    private long _lastBaseNResult;
+    private int _constantsSelectedIndex;
+    private int _conversionsSelectedIndex;
+    private bool _showThemesMenu;
+    private int _themesSelectedIndex;
+    private int _currentThemeIndex = 0;
     private int _historyIndex = -1;
     private readonly List<string> _history = new();
     private string _setupStatusText = "";
@@ -64,14 +79,60 @@ public class CalculatorViewModel : INotifyPropertyChanged
         _engine.Memory = _memory;
         _engine.Angle = _angle;
         InputCommand = new RelayCommand(HandleInput);
+
+        _blinkTimer = new System.Windows.Threading.DispatcherTimer
+        {
+            Interval = TimeSpan.FromMilliseconds(500)
+        };
+        _blinkTimer.Tick += (s, e) =>
+        {
+            _showCaret = !_showCaret;
+            OnPropertyChanged(nameof(ExpressionText));
+        };
+        _blinkTimer.Start();
+
+        // Load saved theme
+        int savedTheme = 0;
+        try
+        {
+            string filePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "theme_setting.txt");
+            if (System.IO.File.Exists(filePath) && int.TryParse(System.IO.File.ReadAllText(filePath), out int idx))
+            {
+                savedTheme = Math.Clamp(idx, 0, 99);
+            }
+        }
+        catch { }
+        _currentThemeIndex = savedTheme;
+        _themesSelectedIndex = savedTheme;
+        SwitchTheme(savedTheme);
     }
 
     // ============ Properties ============
 
     public string ExpressionText
     {
-        get => _expression;
-        set { _expression = value; OnPropertyChanged(); }
+        get
+        {
+            bool menuActive = ShowSetup || ShowConstants || ShowConversions || ShowThemesMenu || ShowAbout || _showStatsMenu;
+            if (menuActive) return _expression;
+
+            if (string.IsNullOrEmpty(_expression))
+            {
+                return _showCaret ? "|" : " ";
+            }
+            if (_showCaret && _cursorIndex >= 0 && _cursorIndex <= _expression.Length)
+            {
+                return _expression.Insert(_cursorIndex, "|");
+            }
+            return _expression;
+        }
+        set
+        {
+            string val = value ?? "";
+            if (val.Contains("|")) val = val.Replace("|", "");
+            _expression = val;
+            OnPropertyChanged();
+        }
     }
 
     public string ResultText
@@ -133,13 +194,13 @@ public class CalculatorViewModel : INotifyPropertyChanged
     public bool ShowConstants
     {
         get => _showConstants;
-        set { _showConstants = value; OnPropertyChanged(); OnPropertyChanged(nameof(ConstantDisplayItems)); }
+        set { _showConstants = value; if (value) ConstantsSelectedIndex = 0; OnPropertyChanged(); OnPropertyChanged(nameof(ConstantDisplayItems)); }
     }
 
     public bool ShowConversions
     {
         get => _showConversions;
-        set { _showConversions = value; OnPropertyChanged(); OnPropertyChanged(nameof(ConversionDisplayItems)); }
+        set { _showConversions = value; if (value) ConversionsSelectedIndex = 0; OnPropertyChanged(); OnPropertyChanged(nameof(ConversionDisplayItems)); }
     }
 
     public bool ShowHistory
@@ -148,14 +209,101 @@ public class CalculatorViewModel : INotifyPropertyChanged
         set { _showHistory = value; OnPropertyChanged(); }
     }
 
-    public bool ShowDecimal => _resultDisplayMode == ResultDisplayMode.Decimal;
-    public bool ShowInlineFraction => _resultDisplayMode == ResultDisplayMode.InlineFraction;
-    public bool ShowStackedFraction => _resultDisplayMode == ResultDisplayMode.StackedFraction;
-    public string FracInlineText { get => _fracInlineText; set { _fracInlineText = value; OnPropertyChanged(); } }
+    public bool IsMemoryActive => _memory.Recall("M") != 0;
+    public bool IsStoreActive => _pendingStore;
+
+    public bool ShowDecimal => _resultDisplayMode == ResultDisplayMode.Decimal && !_isBaseNMode;
+    public string BaseNDecDisplay { get => _baseNDecDisplay; set { _baseNDecDisplay = value; OnPropertyChanged(); } }
+    public string BaseNHexDisplay { get => _baseNHexDisplay; set { _baseNHexDisplay = value; OnPropertyChanged(); } }
+    public string BaseNBinDisplay { get => _baseNBinDisplay; set { _baseNBinDisplay = value; OnPropertyChanged(); } }
+    public string BaseNOctDisplay { get => _baseNOctDisplay; set { _baseNOctDisplay = value; OnPropertyChanged(); } }
+
+    public int ConstantsSelectedIndex
+    {
+        get => _constantsSelectedIndex;
+        set { _constantsSelectedIndex = Math.Clamp(value, 0, ConstantLibraryService.Constants.Length - 1); OnPropertyChanged(); }
+    }
+
+    public int ConversionsSelectedIndex
+    {
+        get => _conversionsSelectedIndex;
+        set { _conversionsSelectedIndex = Math.Clamp(value, 0, UnitConversionService.Conversions.Length - 1); OnPropertyChanged(); }
+    }
+    public bool ShowThemesMenu
+    {
+        get => _showThemesMenu;
+        set { _showThemesMenu = value; if (value) ThemesSelectedIndex = _currentThemeIndex; OnPropertyChanged(); }
+    }
+
+    public string ActiveThemeName => ThemeDisplayItems[_currentThemeIndex].Split(':')[1];
+
+    public bool HasError
+    {
+        get => _hasError;
+        set
+        {
+            _hasError = value;
+            NotifyErrorState();
+        }
+    }
+
+    public string ErrorTitleText
+    {
+        get
+        {
+            if (ResultText.Contains("Syntax", StringComparison.OrdinalIgnoreCase))
+                return "Syntax ERROR";
+            if (ResultText.Contains("Math", StringComparison.OrdinalIgnoreCase))
+                return "Math ERROR";
+            return "ERROR";
+        }
+    }
+
+    public bool IsSyntaxError => ResultText.Contains("Syntax", StringComparison.OrdinalIgnoreCase);
+
+    public void NotifyErrorState()
+    {
+        OnPropertyChanged(nameof(HasError));
+        OnPropertyChanged(nameof(ErrorTitleText));
+        OnPropertyChanged(nameof(IsSyntaxError));
+    }
+
+    public int ThemesSelectedIndex
+    {
+        get => _themesSelectedIndex;
+        set { _themesSelectedIndex = Math.Clamp(value, 0, 99); OnPropertyChanged(); }
+    }
+
+        public string[] ThemeDisplayItems => new[]
+    {
+        "1:Charcoal Black", "2:Dark Gray", "3:AMOLED Dark", "4:Matte Black", "5:Carbon Gray",
+        "6:Titanium", "7:Classic Retro", "8:Midnight Blue", "9:Deep Forest", "10:Cyberpunk",
+        "11:White Marble", "12:Sakura", "13:Crimson Ruby", "14:Golden Luxury", "15:Deep Ocean",
+        "16:Chocolate Bronze", "17:Lavender", "18:Neon Matrix", "19:Solar Flare", "20:Royal Amethyst",
+        "21:Platinum Silver", "22:Copper Rust", "23:Terminal Amber", "24:Mint Ice", "25:Sandstone",
+        "26:Slate Blue", "27:Peach Cream", "28:Steel Metal", "29:Emerald Gold", "30:Royal Velvet",
+        "31:Vintage Beige", "32:Plum Wine", "33:Ocean Breeze", "34:Dark Violet", "35:Hot Pink",
+        "36:Mocha Latte", "37:Steel Blue", "38:Olive Drab", "39:Mustard Seed", "40:Coral Reef",
+        "41:Arctic Ice", "42:Sunset Orange", "43:Redwood Forest", "44:Teal Fusion", "45:Lilac Mist",
+        "46:Carbon Red", "47:Glacier Blue", "48:Grape Soda", "49:Lemon Drop", "50:Bronze Age",
+        "51:Turquoise Gem", "52:Orchid Blossom", "53:Silver Ice", "54:Ruby Wine", "55:Forest Moss",
+        "56:Rose Gold", "57:Sapphire Blue", "58:Warm Sand", "59:Lilac Sunset", "60:Deep Cyber",
+        "61:Vintage Terminal", "62:Aqua Dream", "63:Espresso Wood", "64:Platinum Gold", "65:Terracotta Rust",
+        "66:Ice Lavender", "67:Carbon Blue", "68:Sea Salt", "69:Plum Blush", "70:Desert Sage",
+        "71:Midnight Purple", "72:Pecan Cream", "73:Denim Blue", "74:Solar Eclipse", "75:Berry Blast",
+        "76:Eucalyptus Mint", "77:Pistachio Nut", "78:Cobalt Blue", "79:Vanilla Sky", "80:Pumpkin Spice",
+        "81:Polar Night", "82:Champagne Gold", "83:Mystic Orchid", "84:Steel Gray", "85:Candy Apple",
+        "86:Teal Breeze", "87:Burgundy Velvet", "88:Honey Glaze", "89:Urban Concrete", "90:Deep Velvet",
+        "91:Lime Spark", "92:Tangerine Glow", "93:Electric Violet", "94:Powder Blue", "95:Mauve Shadow",
+        "96:Emerald Velvet", "97:Soft Coral", "98:Carbon Pink", "99:Slate Jade", "100:Vintage Ivory"
+    };
+    public bool ShowStackedFraction => _resultDisplayMode == ResultDisplayMode.ImproperFraction || _resultDisplayMode == ResultDisplayMode.MixedFraction;
+    public bool ShowFracWhole { get => _showFracWhole; set { _showFracWhole = value; OnPropertyChanged(); } }
+    public string FracWholeDisplay { get => _fracWholeDisplay; set { _fracWholeDisplay = value; OnPropertyChanged(); } }
     public long FracNumerator { get => _fracNumerator; set { _fracNumerator = value; OnPropertyChanged(); } }
     public long FracDenominator { get => _fracDenominator; set { _fracDenominator = value; OnPropertyChanged(); } }
-    public string FracSignDisplay { get; set; } = "";
-    public ResultDisplayMode ResultMode { get => _resultDisplayMode; set { _resultDisplayMode = value; OnPropertyChanged(); OnPropertyChanged(nameof(ShowDecimal)); OnPropertyChanged(nameof(ShowInlineFraction)); OnPropertyChanged(nameof(ShowStackedFraction)); } }
+    public string FracSignDisplay { get => _fracSignDisplay; set { _fracSignDisplay = value; OnPropertyChanged(); } }
+    public ResultDisplayMode ResultMode { get => _resultDisplayMode; set { _resultDisplayMode = value; OnPropertyChanged(); OnPropertyChanged(nameof(ShowDecimal)); OnPropertyChanged(nameof(ShowStackedFraction)); } }
 
     public string ModeLabel => _currentMode switch
     {
@@ -186,7 +334,7 @@ public class CalculatorViewModel : INotifyPropertyChanged
     public static readonly string[][] SetupPages = new[]
     {
         new[] { "COMP", "CMPLX", "STAT", "BASE-N", "EQN", "MATRIX", "TABLE", "VECTOR" },
-        new[] { "INEQ", "VERIF", "DIST" }
+        new[] { "INEQ", "VERIF", "DIST", "THEME" }
     };
 
     public static readonly string[][] AboutPages = new[]
@@ -231,7 +379,13 @@ public class CalculatorViewModel : INotifyPropertyChanged
     public int CursorIndex
     {
         get => _cursorIndex;
-        set { _cursorIndex = Math.Clamp(value, 0, _expression.Length); OnPropertyChanged(); }
+        set
+        {
+            _cursorIndex = Math.Clamp(value, 0, _expression.Length);
+            _showCaret = true;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(ExpressionText));
+        }
     }
 
     // ============ Input Handler ============
@@ -245,6 +399,7 @@ public class CalculatorViewModel : INotifyPropertyChanged
         // Handle sub-menus first
         if (_showConstants) { HandleConstantsInput(input); return; }
         if (_showConversions) { HandleConversionsInput(input); return; }
+        if (_showThemesMenu) { HandleThemesMenuInput(input); return; }
         if (_showHistory) { HandleHistoryInput(input); return; }
         if (_isStatsMode) { HandleStatsInput(input); return; }
         if (_isTableMode)
@@ -283,11 +438,19 @@ public class CalculatorViewModel : INotifyPropertyChanged
         // Mode-specific dispatch (after SHIFT/ALPHA mapping)
         if (_isBaseNMode) { HandleBaseNInput(input); return; }
 
-        if (_hasError)
+        if (HasError)
         {
             if (input is "AC" or "ON") { ClearAll(); return; }
-            if (input is "DEL") { DeleteAtCursor(); return; }
+            if (input is "DEL" or "LEFT" or "RIGHT" or "UP" or "DOWN")
+            {
+                HasError = false;
+                ResultText = "0";
+                ResultBrush = new(Color.FromRgb(0x18, 0x20, 0x18));
+                OnPropertyChanged(nameof(ExpressionText));
+                return;
+            }
             ClearAll();
+            return;
         }
 
         if (_justEvaluated && input is not ("=" or "AC" or "DEL" or "SHIFT" or "ALPHA" or "MODE" or "STO"
@@ -353,11 +516,12 @@ public class CalculatorViewModel : INotifyPropertyChanged
 
             case "MODE": ToggleModeMenu(); break;
             case "ABOUT": ToggleAbout(); break;
+            case "THEME_CYCLE": _currentThemeIndex = (_currentThemeIndex + 1) % 100; SwitchTheme(_currentThemeIndex); break;
 
             case "STO": HandleStore(); break;
             case "RCL": InsertAtCursor("Ans"); break;
-            case "M+": _memory.AddToM(EvaluateCurrent()); ShowInfo("M+"); break;
-            case "M-": _memory.SubtractFromM(EvaluateCurrent()); ShowInfo("M-"); break;
+            case "M+": _memory.AddToM(EvaluateCurrent()); OnPropertyChanged(nameof(IsMemoryActive)); ShowInfo("M+"); break;
+            case "M-": _memory.SubtractFromM(EvaluateCurrent()); OnPropertyChanged(nameof(IsMemoryActive)); ShowInfo("M-"); break;
 
             case "ENG": FormattingService.Mode = FormattingService.DisplayMode.Engineering; ShowInfo("ENG"); break;
             case "SD": ToggleFractionDisplay(); break;
@@ -475,7 +639,7 @@ public class CalculatorViewModel : INotifyPropertyChanged
             _history.Add($"{expr} = {result}");
             _historyIndex = _history.Count;
             _justEvaluated = true;
-            _hasError = false;
+            HasError = false;
             return;
         }
 
@@ -487,7 +651,7 @@ public class CalculatorViewModel : INotifyPropertyChanged
             _history.Add($"{expr} = {result}");
             _historyIndex = _history.Count;
             _justEvaluated = true;
-            _hasError = false;
+            HasError = false;
             return;
         }
 
@@ -499,7 +663,7 @@ public class CalculatorViewModel : INotifyPropertyChanged
             _history.Add($"{expr} = {result}");
             _historyIndex = _history.Count;
             _justEvaluated = true;
-            _hasError = false;
+            HasError = false;
             return;
         }
 
@@ -602,19 +766,19 @@ public class CalculatorViewModel : INotifyPropertyChanged
             _history.Add($"{expr} = {_resultText}");
             _historyIndex = _history.Count;
             _justEvaluated = true;
-            _hasError = false;
+            HasError = false;
         }
         catch (CalculatorException ex)
         {
             ResultText = ex.Message;
             ResultBrush = new(Color.FromRgb(0x7B, 0x2D, 0x2D));
-            _hasError = true; _justEvaluated = false;
+            HasError = true; _justEvaluated = false;
         }
         catch (Exception)
         {
             ResultText = "Math Error";
             ResultBrush = new(Color.FromRgb(0x7B, 0x2D, 0x2D));
-            _hasError = true; _justEvaluated = false;
+            HasError = true; _justEvaluated = false;
         }
     }
 
@@ -645,7 +809,7 @@ public class CalculatorViewModel : INotifyPropertyChanged
                 _memory.PushAns(result);
                 ShowResult(result);
             }
-            catch { ResultText = "Math Error"; ResultBrush = new(Color.FromRgb(0x7B, 0x2D, 0x2D)); _hasError = true; }
+            catch { ResultText = "Math Error"; ResultBrush = new(Color.FromRgb(0x7B, 0x2D, 0x2D)); HasError = true; }
         }
     }
 
@@ -666,7 +830,7 @@ public class CalculatorViewModel : INotifyPropertyChanged
                 _memory.PushAns(result);
                 ShowResult(result);
             }
-            catch { ResultText = "Math Error"; ResultBrush = new(Color.FromRgb(0x7B, 0x2D, 0x2D)); _hasError = true; }
+            catch { ResultText = "Math Error"; ResultBrush = new(Color.FromRgb(0x7B, 0x2D, 0x2D)); HasError = true; }
         }
     }
 
@@ -677,6 +841,7 @@ public class CalculatorViewModel : INotifyPropertyChanged
     {
         _pendingStoreValue = EvaluateCurrent();
         _pendingStore = true;
+        OnPropertyChanged(nameof(IsStoreActive));
         IsAlphaActive = true;
         ShowInfo("STO _");
     }
@@ -687,6 +852,9 @@ public class CalculatorViewModel : INotifyPropertyChanged
         {
             _memory.Store(varName, _pendingStoreValue);
             _pendingStore = false;
+            OnPropertyChanged(nameof(IsStoreActive));
+            if (varName.Equals("M", StringComparison.OrdinalIgnoreCase))
+                OnPropertyChanged(nameof(IsMemoryActive));
             ShowInfo($"{varName} stored");
         }
         else
@@ -707,9 +875,10 @@ public class CalculatorViewModel : INotifyPropertyChanged
         ExpressionText = "";
         ResultText = "0";
         ResultBrush = new(Color.FromRgb(0x18, 0x20, 0x18));
-        _justEvaluated = false; _hasError = false;
+        _justEvaluated = false; HasError = false;
         IsShiftActive = false; IsAlphaActive = false; IsHypActive = false;
         _pendingStore = false;
+        OnPropertyChanged(nameof(IsStoreActive));
         _cursorIndex = 0;
         if (_isBaseNMode) OnPropertyChanged(nameof(IsBaseNActive));
         if (_isStatsMode) OnPropertyChanged(nameof(IsStatsActive));
@@ -721,6 +890,12 @@ public class CalculatorViewModel : INotifyPropertyChanged
         _isEqnMode = false; _isMatrixMode = false; _isVectorMode = false; _isTableMode = false;
         _tablePhase = 0; _tablePage = 0; _tableFunction = ""; _table.Rows.Clear();
         _showConstants = false; _showConversions = false; _showHistory = false;
+        _showThemesMenu = false;
+        _lastBaseNResult = 0;
+        BaseNDecDisplay = "";
+        BaseNHexDisplay = "";
+        BaseNBinDisplay = "";
+        BaseNOctDisplay = "";
         ResultMode = ResultDisplayMode.Decimal;
         _currentMode = CalculatorMode.COMP;
         SetupStatusText = "";
@@ -762,12 +937,16 @@ public class CalculatorViewModel : INotifyPropertyChanged
             ActivateMode(_currentMode);
             return;
         }
-        if (_setupPage == 1 && int.TryParse(input, out int m) && m >= 1 && m <= 3)
+        if (_setupPage == 1 && int.TryParse(input, out int m) && m >= 1 && m <= 4)
         {
-            if (m == 1) SetupInfoText = "Mode: INEQ";
-            else if (m == 2) SetupInfoText = "Mode: VERIF";
-            else SetupInfoText = "Mode: DIST";
-            SetupInfoVisible = true; ShowSetup = false;
+            if (m == 1) { SetupInfoText = "Mode: INEQ"; SetupInfoVisible = true; ShowSetup = false; }
+            else if (m == 2) { SetupInfoText = "Mode: VERIF"; SetupInfoVisible = true; ShowSetup = false; }
+            else if (m == 3) { SetupInfoText = "Mode: DIST"; SetupInfoVisible = true; ShowSetup = false; }
+            else
+            {
+                ShowSetup = false;
+                ShowThemesMenu = true;
+            }
             return;
         }
         if (input == "RIGHT" && _setupPage == 0) { _setupPage = 1; OnPropertyChanged(nameof(CurrentSetupPage)); OnPropertyChanged(nameof(SetupDisplayItems)); }
@@ -829,30 +1008,177 @@ public class CalculatorViewModel : INotifyPropertyChanged
         if (input is "ABOUT") { ShowAbout = false; }
     }
 
-    // ============ Sub-Menu Handlers ============
-
     private void HandleConstantsInput(string input)
     {
-        if (int.TryParse(input, out int n) && n >= 1 && n <= ConstantLibraryService.Constants.Length)
+        int total = ConstantLibraryService.Constants.Length;
+        if (input is "UP")
+        {
+            ConstantsSelectedIndex = (ConstantsSelectedIndex - 1 + total) % total;
+            return;
+        }
+        if (input is "DOWN")
+        {
+            ConstantsSelectedIndex = (ConstantsSelectedIndex + 1) % total;
+            return;
+        }
+        if (input is "=" or "CALC" or "NAV")
+        {
+            var c = ConstantLibraryService.GetConstant(ConstantsSelectedIndex);
+            InsertAtCursor(c.Symbol);
+            ShowConstants = false;
+            return;
+        }
+        if (int.TryParse(input, out int n) && n >= 1 && n <= total)
         {
             var c = ConstantLibraryService.GetConstant(n - 1);
             InsertAtCursor(c.Symbol);
             ShowConstants = false;
+            return;
         }
         if (input is "AC" or "ON") ShowConstants = false;
     }
 
     private void HandleConversionsInput(string input)
     {
-        if (int.TryParse(input, out int n) && n >= 1 && n <= UnitConversionService.Conversions.Length)
+        int total = UnitConversionService.Conversions.Length;
+        if (input is "UP")
+        {
+            ConversionsSelectedIndex = (ConversionsSelectedIndex - 1 + total) % total;
+            return;
+        }
+        if (input is "DOWN")
+        {
+            ConversionsSelectedIndex = (ConversionsSelectedIndex + 1) % total;
+            return;
+        }
+        if (input is "=" or "CALC" or "NAV")
+        {
+            double val = EvaluateCurrent();
+            var (result, label) = UnitConversionService.Convert(ConversionsSelectedIndex, val, true);
+            ResultText = $"{val:G4} → {result:G4} ({label})";
+            ResultBrush = new(Color.FromRgb(0x64, 0x70, 0x62));
+            ShowConversions = false;
+            return;
+        }
+        if (int.TryParse(input, out int n) && n >= 1 && n <= total)
         {
             double val = EvaluateCurrent();
             var (result, label) = UnitConversionService.Convert(n - 1, val, true);
             ResultText = $"{val:G4} → {result:G4} ({label})";
             ResultBrush = new(Color.FromRgb(0x64, 0x70, 0x62));
             ShowConversions = false;
+            return;
         }
         if (input is "AC" or "ON") ShowConversions = false;
+    }
+
+    private void HandleThemesMenuInput(string input)
+    {
+        int total = ThemeDisplayItems.Length;
+        if (input is "UP")
+        {
+            ThemesSelectedIndex = (ThemesSelectedIndex - 1 + total) % total;
+            return;
+        }
+        if (input is "DOWN")
+        {
+            ThemesSelectedIndex = (ThemesSelectedIndex + 1) % total;
+            return;
+        }
+        if (input is "=" or "CALC" or "NAV")
+        {
+            SwitchTheme(ThemesSelectedIndex);
+            ShowThemesMenu = false;
+            return;
+        }
+        if (int.TryParse(input, out int n) && n >= 1 && n <= total)
+        {
+            SwitchTheme(n - 1);
+            ShowThemesMenu = false;
+            return;
+        }
+        if (input is "AC" or "ON") ShowThemesMenu = false;
+    }
+
+    private void SwitchTheme(int index)
+    {
+        _currentThemeIndex = index;
+        OnPropertyChanged(nameof(ActiveThemeName));
+        
+        try
+        {
+            string filePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "theme_setting.txt");
+            System.IO.File.WriteAllText(filePath, index.ToString());
+        }
+        catch { }
+
+        string themeFile;
+        if (index == 0)
+        {
+            themeFile = "/Styles/Theme.xaml";
+        }
+        else
+        {
+            string[] themeNames = new[]
+            {
+                "DarkGray", "AMOLED", "MatteBlack", "CarbonGray", "Titanium", "ClassicRetro", "MidnightBlue",
+                "DeepForest", "Cyberpunk", "WhiteMarble", "Sakura", "CrimsonRuby",
+                "GoldenLuxury", "DeepOcean", "ChocolateBronze", "Lavender", "NeonMatrix",
+                "SolarFlare", "RoyalAmethyst", "PlatinumSilver", "CopperRust", "TerminalAmber",
+                "MintIce", "Sandstone", "SlateBlue", "PeachCream", "SteelMetal",
+                "EmeraldGold", "RoyalVelvet", "VintageBeige", "PlumWine", "OceanBreeze",
+                "DarkViolet", "HotPink", "MochaLatte", "SteelBlue", "OliveDrab",
+                "MustardSeed", "CoralReef", "ArcticIce", "SunsetOrange", "RedwoodForest",
+                "TealFusion", "LilacMist", "CarbonRed", "GlacierBlue", "GrapeSoda",
+                "LemonDrop", "BronzeAge", "TurquoiseGem", "OrchidBlossom", "SilverIce",
+                "RubyWine", "ForestMoss", "RoseGold", "SapphireBlue", "WarmSand",
+                "LilacSunset", "DeepCyber", "VintageTerminal", "AquaDream", "EspressoWood",
+                "PlatinumGold", "TerracottaRust", "IceLavender", "CarbonBlue", "SeaSalt",
+                "PlumBlush", "DesertSage", "MidnightPurple", "PecanCream", "DenimBlue",
+                "SolarEclipse", "BerryBlast", "EucalyptusMint", "PistachioNut", "CobaltBlue",
+                "VanillaSky", "PumpkinSpice", "PolarNight", "ChampagneGold", "MysticOrchid",
+                "SteelGray", "CandyApple", "TealBreeze", "BurgundyVelvet", "HoneyGlaze",
+                "UrbanConcrete", "DeepVelvet", "LimeSpark", "TangerineGlow", "ElectricViolet",
+                "PowderBlue", "MauveShadow", "EmeraldVelvet", "SoftCoral", "CarbonPink",
+                "SlateJade", "VintageIvory"
+            };
+            int arrayIdx = index - 1;
+            if (arrayIdx >= 0 && arrayIdx < themeNames.Length)
+            {
+                themeFile = $"/Styles/Theme{index}-{themeNames[arrayIdx]}.xaml";
+            }
+            else
+            {
+                themeFile = "/Styles/Theme.xaml";
+            }
+        }
+
+        try
+        {
+            var app = Application.Current;
+            if (app == null) return;
+
+            var dict = new ResourceDictionary
+            {
+                Source = new Uri(themeFile, UriKind.RelativeOrAbsolute)
+            };
+
+            var merged = app.Resources.MergedDictionaries;
+            for (int i = 0; i < merged.Count; i++)
+            {
+                var src = merged[i].Source?.ToString() ?? "";
+                if (src.Contains("Styles/Theme"))
+                {
+                    merged.RemoveAt(i);
+                    i--;
+                }
+            }
+            merged.Add(dict);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to load theme: {ex.Message}");
+        }
     }
 
     private void HandleHistoryInput(string input)
@@ -1003,6 +1329,7 @@ public class CalculatorViewModel : INotifyPropertyChanged
             _baseN.CurrentBase = input switch { "DEC" => BaseNService.NumBase.DEC, "HEX" => BaseNService.NumBase.HEX,
                 "BIN" => BaseNService.NumBase.BIN, _ => BaseNService.NumBase.OCT };
             OnPropertyChanged(nameof(BaseLabel));
+            UpdateBaseNDisplays(_lastBaseNResult);
             ShowInfo(_baseN.BaseLabel); return;
         }
         if (input is "=" or "CALC")
@@ -1051,28 +1378,43 @@ public class CalculatorViewModel : INotifyPropertyChanged
         {
             ResultText = $"Invalid {_baseN.BaseLabel} digit";
             ResultBrush = new(Color.FromRgb(0x7B, 0x2D, 0x2D));
-            _hasError = true;
+            HasError = true;
             return;
         }
 
         try
         {
             long result = EvaluateBaseNExpression(expr);
+            _lastBaseNResult = result;
             ResultText = _baseN.ToSignedBase(result);
             ResultBrush = new(Color.FromRgb(0x18, 0x20, 0x18));
-            _hasError = false;
+            HasError = false;
             _justEvaluated = true;
             _memory.PushAns(result);
             _history.Add($"{expr} = {_resultText}");
             _historyIndex = _history.Count;
+            UpdateBaseNDisplays(result);
         }
         catch (Exception ex)
         {
             ResultText = ex.Message;
             ResultBrush = new(Color.FromRgb(0x7B, 0x2D, 0x2D));
-            _hasError = true;
+            HasError = true;
             _justEvaluated = false;
         }
+    }
+
+    private void UpdateBaseNDisplays(long result)
+    {
+        string prefixDec = _baseN.CurrentBase == BaseNService.NumBase.DEC ? "▶ " : "  ";
+        string prefixHex = _baseN.CurrentBase == BaseNService.NumBase.HEX ? "▶ " : "  ";
+        string prefixBin = _baseN.CurrentBase == BaseNService.NumBase.BIN ? "▶ " : "  ";
+        string prefixOct = _baseN.CurrentBase == BaseNService.NumBase.OCT ? "▶ " : "  ";
+
+        BaseNDecDisplay = $"{prefixDec}DEC: {BaseNService.ToSignedBase(result, BaseNService.NumBase.DEC)}";
+        BaseNHexDisplay = $"{prefixHex}HEX: {BaseNService.ToSignedBase(result, BaseNService.NumBase.HEX)}";
+        BaseNBinDisplay = $"{prefixBin}BIN: {BaseNService.ToSignedBase(result, BaseNService.NumBase.BIN)}";
+        BaseNOctDisplay = $"{prefixOct}OCT: {BaseNService.ToSignedBase(result, BaseNService.NumBase.OCT)}";
     }
 
     private long EvaluateBaseNExpression(string expr)
@@ -1224,21 +1566,6 @@ public class CalculatorViewModel : INotifyPropertyChanged
             return;
         }
 
-        // Cycle: Decimal -> InlineFraction -> StackedFraction -> Decimal
-        ResultMode = _resultDisplayMode switch
-        {
-            ResultDisplayMode.Decimal => ResultDisplayMode.InlineFraction,
-            ResultDisplayMode.InlineFraction => ResultDisplayMode.StackedFraction,
-            _ => ResultDisplayMode.Decimal
-        };
-
-        if (_resultDisplayMode == ResultDisplayMode.Decimal)
-        {
-            ResultText = FormatNumber(val);
-            ResultBrush = new(Color.FromRgb(0x18, 0x20, 0x18));
-            return;
-        }
-
         try
         {
             var frac = FractionValue.FromDouble(val);
@@ -1252,21 +1579,44 @@ public class CalculatorViewModel : INotifyPropertyChanged
                 return;
             }
 
-            FracNumerator = frac.Numerator;
-            FracDenominator = frac.Denominator;
-            FracSignDisplay = frac.IsNegative ? "-" : "";
+            bool hasWholePart = frac.WholePart > 0;
 
-            if (_resultDisplayMode == ResultDisplayMode.InlineFraction)
+            // Cycle: Decimal -> ImproperFraction -> (if hasWholePart) MixedFraction -> Decimal
+            ResultDisplayMode nextMode = _resultDisplayMode switch
             {
-                FracInlineText = frac.ToString();
-                ResultBrush = new(Color.FromRgb(0x18, 0x20, 0x18));
-                ResultText = "";
-            }
-            else // StackedFraction
+                ResultDisplayMode.Decimal => ResultDisplayMode.ImproperFraction,
+                ResultDisplayMode.ImproperFraction => hasWholePart ? ResultDisplayMode.MixedFraction : ResultDisplayMode.Decimal,
+                _ => ResultDisplayMode.Decimal
+            };
+
+            ResultMode = nextMode;
+
+            if (ResultMode == ResultDisplayMode.Decimal)
             {
+                ResultText = FormatNumber(val);
                 ResultBrush = new(Color.FromRgb(0x18, 0x20, 0x18));
-                ResultText = "";
+                return;
             }
+
+            if (ResultMode == ResultDisplayMode.ImproperFraction)
+            {
+                FracNumerator = frac.WholePart * frac.Denominator + frac.Numerator;
+                FracDenominator = frac.Denominator;
+                FracSignDisplay = frac.IsNegative ? "-" : "";
+                ShowFracWhole = false;
+                FracWholeDisplay = "";
+            }
+            else // MixedFraction
+            {
+                FracNumerator = frac.Numerator;
+                FracDenominator = frac.Denominator;
+                FracSignDisplay = frac.IsNegative ? "-" : "";
+                ShowFracWhole = true;
+                FracWholeDisplay = frac.WholePart.ToString();
+            }
+
+            ResultBrush = new(Color.FromRgb(0x18, 0x20, 0x18));
+            ResultText = "";
         }
         catch
         {
@@ -1335,7 +1685,7 @@ public class CalculatorViewModel : INotifyPropertyChanged
                 _memory.PushAns(result);
                 ShowResult(result);
             }
-            catch { ResultText = "Math Error"; ResultBrush = new(Color.FromRgb(0x7B, 0x2D, 0x2D)); _hasError = true; }
+            catch { ResultText = "Math Error"; ResultBrush = new(Color.FromRgb(0x7B, 0x2D, 0x2D)); HasError = true; }
         }
     }
 
@@ -1362,7 +1712,7 @@ public class CalculatorViewModel : INotifyPropertyChanged
             _memory.PushAns(result);
             ShowResult(result);
         }
-        catch { ResultText = "Math Error"; ResultBrush = new(Color.FromRgb(0x7B, 0x2D, 0x2D)); _hasError = true; }
+        catch { ResultText = "Math Error"; ResultBrush = new(Color.FromRgb(0x7B, 0x2D, 0x2D)); HasError = true; }
     }
 
     private void HandleIntgFunction(string expr)
@@ -1376,7 +1726,7 @@ public class CalculatorViewModel : INotifyPropertyChanged
             _memory.PushAns(result);
             ShowResult(result);
         }
-        catch { ResultText = "Math Error"; ResultBrush = new(Color.FromRgb(0x7B, 0x2D, 0x2D)); _hasError = true; }
+        catch { ResultText = "Math Error"; ResultBrush = new(Color.FromRgb(0x7B, 0x2D, 0x2D)); HasError = true; }
     }
 
     private void HandleSolveFunction(string expr)
@@ -1402,7 +1752,7 @@ public class CalculatorViewModel : INotifyPropertyChanged
                 guessStr = inner[(commaPos + 1)..].Trim();
                 if (!double.TryParse(guessStr, System.Globalization.NumberStyles.Float,
                     System.Globalization.CultureInfo.InvariantCulture, out guess))
-                { ResultText = "Invalid guess"; ResultBrush = new(Color.FromRgb(0x7B, 0x2D, 0x2D)); _hasError = true; return; }
+                { ResultText = "Invalid guess"; ResultBrush = new(Color.FromRgb(0x7B, 0x2D, 0x2D)); HasError = true; return; }
             }
             else
             {
@@ -1410,7 +1760,7 @@ public class CalculatorViewModel : INotifyPropertyChanged
             }
 
             if (!equation.Contains("X") && !equation.Contains("x"))
-            { ResultText = "Equation must use X"; ResultBrush = new(Color.FromRgb(0x7B, 0x2D, 0x2D)); _hasError = true; return; }
+            { ResultText = "Equation must use X"; ResultBrush = new(Color.FromRgb(0x7B, 0x2D, 0x2D)); HasError = true; return; }
 
             // Split on = to get LHS and RHS
             int eqPos = equation.IndexOf('=');
@@ -1439,19 +1789,19 @@ public class CalculatorViewModel : INotifyPropertyChanged
             _history.Add($"{expr} = {_resultText}");
             _historyIndex = _history.Count;
             _justEvaluated = true;
-            _hasError = false;
+            HasError = false;
         }
         catch (InvalidOperationException ex)
         {
             ResultText = ex.Message;
             ResultBrush = new(Color.FromRgb(0x7B, 0x2D, 0x2D));
-            _hasError = true;
+            HasError = true;
         }
         catch (Exception)
         {
             ResultText = "Solve Error";
             ResultBrush = new(Color.FromRgb(0x7B, 0x2D, 0x2D));
-            _hasError = true;
+            HasError = true;
         }
     }
 

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SmartCalculator User Manual & Help Manual</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0F172A;
+            color: #E2E8F0;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        h1, h2, h3 {
+            color: #F8FAFC;
+        }
+        h1 {
+            border-bottom: 2px solid #38BDF8;
+            padding-bottom: 10px;
+            font-size: 2.5em;
+        }
+        h2 {
+            border-bottom: 1px solid #334155;
+            padding-bottom: 5px;
+            margin-top: 40px;
+            color: #38BDF8;
+        }
+        code {
+            background-color: #1E293B;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: Consolas, Monaco, monospace;
+            color: #FF79C6;
+        }
+        pre {
+            background-color: #1E293B;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            border: 1px solid #334155;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #334155;
+        }
+        th {
+            background-color: #1E293B;
+            color: #38BDF8;
+        }
+        tr:hover {
+            background-color: #1E293B;
+        }
+        .badge {
+            background-color: #38BDF8;
+            color: #0F172A;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+        .footer {
+            margin-top: 80px;
+            text-align: center;
+            font-size: 0.9em;
+            color: #64748B;
+            border-top: 1px solid #334155;
+            padding-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SmartCalculator User Manual <span class="badge">v2.0.0</span></h1>
+        <p>Welcome to <strong>SmartCalculator</strong>, a premium high-fidelity scientific calculator built using WPF and .NET 8. This document describes the primary capabilities, modes of operation, user settings, and keyboard shortcuts.</p>
+
+        <h2>1. Overview of Key Features</h2>
+        <ul>
+            <li><strong>100 Premium Visual Themes</strong>: Cycle themes using the Palette button or hold it down to select from an on-screen list.</li>
+            <li><strong>Tactile Dpad Feedback</strong>: Navigation buttons visually depress and animate when clicked or pressed on the keyboard.</li>
+            <li><strong>Casio-style ERROR screen</strong>: If a formula is invalid, a dedicated error screen displays guidance. Press arrow keys to return to the edit screen at the cursor.</li>
+            <li><strong>Memory & Angle Units</strong>: Fully persistent Ans/Memory and degrees/radians selector.</li>
+        </ul>
+
+        <h2>2. Modes of Operation (MODE / SETUP)</h2>
+        <p>Press the <code>MODE</code> key to open the Mode menu. Select the mode by pressing the corresponding number:</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Mode</th>
+                    <th>Select Key</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>COMP</strong></td>
+                    <td><code>1</code></td>
+                    <td>Standard general arithmetic calculations (with integrals/derivatives).</td>
+                </tr>
+                <tr>
+                    <td><strong>CMPLX</strong></td>
+                    <td><code>2</code></td>
+                    <td>Complex number calculations using imaginary <code>i</code>.</td>
+                </tr>
+                <tr>
+                    <td><strong>STAT</strong></td>
+                    <td><code>3</code></td>
+                    <td>Single-variable statistical calculations and distribution functions.</td>
+                </tr>
+                <tr>
+                    <td><strong>BASE-N</strong></td>
+                    <td><code>4</code></td>
+                    <td>Binary, Octal, Decimal, and Hexadecimal conversion and logic arithmetic.</td>
+                </tr>
+                <tr>
+                    <td><strong>MATRIX</strong></td>
+                    <td><code>5</code></td>
+                    <td>Matrix dimensions definition and algebraic matrix equations.</td>
+                </tr>
+                <tr>
+                    <td><strong>VECTOR</strong></td>
+                    <td><code>6</code></td>
+                    <td>Vector arithmetic (cross products, dot products).</td>
+                </tr>
+                <tr>
+                    <td><strong>TABLE</strong></td>
+                    <td><code>7</code></td>
+                    <td>Function generation table for f(x).</td>
+                </tr>
+                <tr>
+                    <td><strong>SOLVE</strong></td>
+                    <td><code>8</code></td>
+                    <td>Equation solver utilizing numerical approximations.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>3. Keyboard Mappings</h2>
+        <p>You can operate the calculator entirely via your keyboard. The active directional arrows and buttons will light up on-screen when pressed:</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Calculator Button</th>
+                    <th>Keyboard Key</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>0</code> - <code>9</code></td>
+                    <td><code>0</code> - <code>9</code> or <code>Numpad 0</code> - <code>Numpad 9</code></td>
+                </tr>
+                <tr>
+                    <td><code>+</code>, <code>−</code>, <code>×</code>, <code>÷</code></td>
+                    <td><code>+</code>, <code>-</code>, <code>*</code>, <code>/</code></td>
+                </tr>
+                <tr>
+                    <td><code>=</code> (Calculate)</td>
+                    <td><code>Enter</code> or <code>=</code></td>
+                </tr>
+                <tr>
+                    <td><code>DEL</code> (Delete)</td>
+                    <td><code>Backspace</code></td>
+                </tr>
+                <tr>
+                    <td><code>AC</code> (All Clear)</td>
+                    <td><code>Escape</code></td>
+                </tr>
+                <tr>
+                    <td><code>UP</code> / <code>DOWN</code></td>
+                    <td><code>Up Arrow</code> / <code>Down Arrow</code></td>
+                </tr>
+                <tr>
+                    <td><code>LEFT</code> / <code>RIGHT</code></td>
+                    <td><code>Left Arrow</code> / <code>Right Arrow</code></td>
+                </tr>
+                <tr>
+                    <td><code>NAV</code> (Confirm)</td>
+                    <td><code>Enter</code> (when a menu list is visible)</td>
+                </tr>
+                <tr>
+                    <td>Variable <code>A</code> - <code>F</code></td>
+                    <td><code>Shift + A</code> - <code>Shift + F</code> (in BASE-N or variables input)</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>4. Troubleshooting Errors</h2>
+        <p>When an error occurs, the calculator will display a specialized Casio-style screen:</p>
+        <ul>
+            <li><strong>Syntax ERROR</strong>: Appears when a formula is written incorrectly. Use the left/right arrow keys to dismiss the error and place the cursor exactly at the edit line to fix it, or press <code>AC</code> to clear.</li>
+            <li><strong>Math ERROR</strong>: Appears for mathematical impossibilities (like dividing by zero). Press <code>AC</code> to clear the error.</li>
+        </ul>
+
+        <div class="footer">
+            SmartCalculator &copy; 2026 Ahmad Ibrahim. Ready for GitHub deployment.
+        </div>
+    </div>
+</body>
+</html>

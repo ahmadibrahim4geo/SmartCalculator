@@ -2,64 +2,64 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:vm="clr-namespace:SmartCalculator.ViewModels">
 
-    <!-- ============== THEME 3 — SOFT DARK TITANIUM ============== -->
-    <!-- Body — dark titanium gray -->
-    <Color x:Key="BodyOuterColor">#1F2125</Color>
-    <Color x:Key="BodyMainColor">#282A2F</Color>
-    <Color x:Key="BodyMain2Color">#222428</Color>
-    <Color x:Key="BodyPanelColor">#303237</Color>
-    <Color x:Key="BodyBorderColor">#3E4046</Color>
+    <!-- ============== THEME — THEME3 TITANIUM ============== -->
+    <!-- Body — near-black AMOLED -->
+    <Color x:Key="BodyOuterColor">#2B2D30</Color>
+    <Color x:Key="BodyMainColor">#3B3E43</Color>
+    <Color x:Key="BodyMain2Color">#323539</Color>
+    <Color x:Key="BodyPanelColor">#464A50</Color>
+    <Color x:Key="BodyBorderColor">#50545C</Color>
 
-    <!-- Science keys — dark gray with subtle warmth -->
-    <Color x:Key="ScienceTopColor">#36383D</Color>
-    <Color x:Key="ScienceMidColor">#303236</Color>
-    <Color x:Key="ScienceBottomColor">#292B2F</Color>
-    <SolidColorBrush x:Key="ScienceBorderBrush" Color="#474950"/>
+    <!-- Science keys — dark charcoal -->
+    <Color x:Key="ScienceTopColor">#484D55</Color>
+    <Color x:Key="ScienceMidColor">#3E4249</Color>
+    <Color x:Key="ScienceBottomColor">#34373D</Color>
+    <SolidColorBrush x:Key="ScienceBorderBrush" Color="#5B616D"/>
 
-    <!-- Number keys — medium gray, not light silver -->
-    <Color x:Key="NumberTopColor">#4A4C51</Color>
-    <Color x:Key="NumberMidColor">#43454A</Color>
-    <Color x:Key="NumberBottomColor">#3C3E42</Color>
-    <SolidColorBrush x:Key="NumberBorderBrush" Color="#56585E"/>
-    <SolidColorBrush x:Key="NumberTextBrush" Color="#ECEEF0"/>
+    <!-- Number keys — dark charcoal (same as science) -->
+    <Color x:Key="NumberTopColor">#484D55</Color>
+    <Color x:Key="NumberMidColor">#3E4249</Color>
+    <Color x:Key="NumberBottomColor">#34373D</Color>
+    <SolidColorBrush x:Key="NumberBorderBrush" Color="#5B616D"/>
+    <SolidColorBrush x:Key="NumberTextBrush" Color="#F3F4F6"/>
 
-    <!-- Operator keys — softly contrasting -->
-    <Color x:Key="OperatorTopColor">#525459</Color>
-    <Color x:Key="OperatorMidColor">#4B4D52</Color>
-    <Color x:Key="OperatorBottomColor">#44464A</Color>
-    <SolidColorBrush x:Key="OperatorBorderBrush" Color="#5E6066"/>
-    <SolidColorBrush x:Key="OperatorTextBrush" Color="#F2F4F6"/>
+    <!-- Operator keys — slightly lighter charcoal -->
+    <Color x:Key="OperatorTopColor">#50545C</Color>
+    <Color x:Key="OperatorMidColor">#464A50</Color>
+    <Color x:Key="OperatorBottomColor">#3B3E43</Color>
+    <SolidColorBrush x:Key="OperatorBorderBrush" Color="#5B616D"/>
+    <SolidColorBrush x:Key="OperatorTextBrush" Color="#F3F4F6"/>
 
-    <!-- Orange controls — reduced, softer -->
-    <Color x:Key="OrangeTopColor">#D4833A</Color>
-    <Color x:Key="OrangeMidColor">#C4732A</Color>
-    <Color x:Key="OrangeBottomColor">#B06320</Color>
-    <SolidColorBrush x:Key="OrangeBorderBrush" Color="#8A4E18"/>
+    <!-- DEL/AC — cyan/teal -->
+    <Color x:Key="OrangeTopColor">#4F46E5</Color>
+    <Color x:Key="OrangeMidColor">#4338CA</Color>
+    <Color x:Key="OrangeBottomColor">#3730A3</Color>
+    <SolidColorBrush x:Key="OrangeBorderBrush" Color="#4F46E5"/>
     <SolidColorBrush x:Key="OrangeTextBrush" Color="#FFFFFF"/>
 
-    <!-- Navy/oval keys — warm slate -->
-    <Color x:Key="NavyTopColor">#40444D</Color>
-    <Color x:Key="NavyMidColor">#383C44</Color>
-    <Color x:Key="NavyBottomColor">#30333A</Color>
-    <SolidColorBrush x:Key="NavyBorderBrush" Color="#50545E"/>
+    <!-- Oval keys — dark charcoal -->
+    <Color x:Key="NavyTopColor">#50545C</Color>
+    <Color x:Key="NavyMidColor">#464A50</Color>
+    <Color x:Key="NavyBottomColor">#3B3E43</Color>
+    <SolidColorBrush x:Key="NavyBorderBrush" Color="#5B616D"/>
 
     <!-- Labels -->
-    <SolidColorBrush x:Key="ShiftLabelBrush" Color="#FFC857"/>
-    <SolidColorBrush x:Key="AlphaLabelBrush" Color="#FF5C66"/>
-    <SolidColorBrush x:Key="KeyTextBrush" Color="#EDEFF1"/>
-    <SolidColorBrush x:Key="SubTextBrush" Color="#B6B8BC"/>
+    <SolidColorBrush x:Key="ShiftLabelBrush" Color="#F59E0B"/>
+    <SolidColorBrush x:Key="AlphaLabelBrush" Color="#EC4899"/>
+    <SolidColorBrush x:Key="KeyTextBrush" Color="#F3F4F6"/>
+    <SolidColorBrush x:Key="SubTextBrush" Color="#9CA3AF"/>
 
-    <!-- LCD -->
-    <Color x:Key="LCDShellColor">#131814</Color>
-    <Color x:Key="LCDRingColor">#4A594A</Color>
-    <Color x:Key="LCDBgColor">#C8D8C4</Color>
-    <Color x:Key="LCDBg2Color">#B8C8B4</Color>
-    <SolidColorBrush x:Key="LCDTextBrush" Color="#1C241C"/>
+    <!-- LCD — classic green scientific -->
+    <Color x:Key="LCDShellColor">#141915</Color>
+    <Color x:Key="LCDRingColor">#4F5C4E</Color>
+    <Color x:Key="LCDBgColor">#CDDBC9</Color>
+    <Color x:Key="LCDBg2Color">#BDCDBA</Color>
+    <SolidColorBrush x:Key="LCDTextBrush" Color="#172017"/>
     <Color x:Key="LCDMutedColor">#62705F</Color>
 
     <!-- ============== BRUSHES ============== -->
     <LinearGradientBrush x:Key="BodyGradient" StartPoint="0,0" EndPoint="0,1">
-        <GradientStop Color="#2E3035" Offset="0"/>
+        <GradientStop Color="#151819" Offset="0"/>
         <GradientStop Color="{StaticResource BodyMainColor}" Offset="0.45"/>
         <GradientStop Color="{StaticResource BodyMain2Color}" Offset="1"/>
     </LinearGradientBrush>
@@ -128,7 +128,7 @@
             <Grid>
                 <Border VerticalAlignment="Top" Height="14" IsHitTestVisible="False"
                         Margin="2,1,2,0" CornerRadius="7,7,4,4"
-                        Background="#28FFFFFF"/>
+                        Background="#12FFFFFF"/>
                 <Grid Margin="3,0,3,2">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -141,16 +141,16 @@
                         </Grid.ColumnDefinitions>
                         <TextBlock Grid.Column="0"
                                    Text="{Binding Path=(vm:ButtonExtensions.SecondaryLabel), RelativeSource={RelativeSource TemplatedParent}}"
-                                   Foreground="#FFC857" FontSize="9" FontWeight="ExtraBold"
+                                   Foreground="#FFD84D" FontSize="7" FontWeight="ExtraBold"
                                    HorizontalAlignment="Left"
-                                   Margin="2,3,0,0"
+                                   Margin="1,3,0,0"
                                    TextWrapping="Wrap"
                                    TextTrimming="None"/>
                         <TextBlock Grid.Column="1"
                                    Text="{Binding Path=(vm:ButtonExtensions.AlphaLabel), RelativeSource={RelativeSource TemplatedParent}}"
-                                   Foreground="#FF5C66" FontSize="9" FontWeight="ExtraBold"
+                                   Foreground="#E34B57" FontSize="7" FontWeight="ExtraBold"
                                    HorizontalAlignment="Right"
-                                   Margin="0,3,2,0"
+                                   Margin="0,3,1,0"
                                    TextWrapping="Wrap"
                                    TextTrimming="None"/>
                     </Grid>
@@ -167,7 +167,7 @@
                 <Trigger.EnterActions>
                     <BeginStoryboard>
                         <Storyboard>
-                            <DoubleAnimation Storyboard.TargetName="border" Storyboard.TargetProperty="Opacity" To="0.88" Duration="0:0:0.08"/>
+                            <DoubleAnimation Storyboard.TargetName="border" Storyboard.TargetProperty="Opacity" To="0.80" Duration="0:0:0.08"/>
                         </Storyboard>
                     </BeginStoryboard>
                 </Trigger.EnterActions>
@@ -199,7 +199,7 @@
             <Grid>
                 <Border VerticalAlignment="Top" Height="14" IsHitTestVisible="False"
                         Margin="2,1,2,0" CornerRadius="7,7,4,4"
-                        Background="#28FFFFFF"/>
+                        Background="#12FFFFFF"/>
                 <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
                                   RecognizesAccessKey="False" Margin="0,2,0,2"/>
             </Grid>
@@ -209,7 +209,7 @@
                 <Trigger.EnterActions>
                     <BeginStoryboard>
                         <Storyboard>
-                            <DoubleAnimation Storyboard.TargetName="border" Storyboard.TargetProperty="Opacity" To="0.88" Duration="0:0:0.08"/>
+                            <DoubleAnimation Storyboard.TargetName="border" Storyboard.TargetProperty="Opacity" To="0.80" Duration="0:0:0.08"/>
                         </Storyboard>
                     </BeginStoryboard>
                 </Trigger.EnterActions>
@@ -240,19 +240,19 @@
                     Background="{StaticResource NavyKeyGradient}"
                     BorderThickness="1"
                     Effect="{x:Null}">
-                <Border CornerRadius="13" BorderThickness="1" BorderBrush="#20FFFFFF"
+                <Border CornerRadius="13" BorderThickness="1" BorderBrush="#12FFFFFF"
                         Margin="1.5" IsHitTestVisible="False"/>
             </Border>
             <Border VerticalAlignment="Top" Height="12" IsHitTestVisible="False"
                     Margin="3,1,3,0" CornerRadius="10,10,5,5"
-                    Background="#20FFFFFF" Opacity="0.7"/>
+                    Background="#12FFFFFF" Opacity="0.7"/>
         </Grid>
         <ControlTemplate.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
                 <Trigger.EnterActions>
                     <BeginStoryboard>
                         <Storyboard>
-                            <DoubleAnimation Storyboard.TargetName="border" Storyboard.TargetProperty="Opacity" To="0.82" Duration="0:0:0.08"/>
+                            <DoubleAnimation Storyboard.TargetName="border" Storyboard.TargetProperty="Opacity" To="0.80" Duration="0:0:0.08"/>
                         </Storyboard>
                     </BeginStoryboard>
                 </Trigger.EnterActions>
@@ -323,7 +323,7 @@
     <!-- ============== DPAD STYLES ============== -->
     <Style x:Key="DpadButtonStyle" TargetType="Button">
         <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Foreground" Value="#F4F6F9"/>
+        <Setter Property="Foreground" Value="#F4F6F7"/>
         <Setter Property="FontSize" Value="13"/>
         <Setter Property="FontWeight" Value="ExtraBold"/>
         <Setter Property="Cursor" Value="Hand"/>
@@ -342,6 +342,33 @@
         </Setter>
     </Style>
 
+    <Style x:Key="DpadCenterButtonStyle" TargetType="Button">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="BorderBrush" Value="#18FFFFFF"/>
+        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="21">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="#10FFFFFF"/>
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+                <Setter Property="Background" Value="#20FFFFFF"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
     <!-- ============== LCD STYLES ============== -->
     <Style x:Key="LcdStatusText" TargetType="TextBlock">
         <Setter Property="Foreground" Value="{StaticResource LCDTextBrush}"/>
@@ -356,8 +383,8 @@
         <Setter Property="Width" Value="22"/>
         <Setter Property="Height" Value="22"/>
         <Setter Property="FontSize" Value="12"/>
-        <Setter Property="Foreground" Value="#FFFFFF"/>
-        <Setter Property="Background" Value="#26292D"/>
+        <Setter Property="Foreground" Value="#F4F6F7"/>
+        <Setter Property="Background" Value="#1D2224"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
@@ -370,7 +397,7 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="#555860"/>
+                            <Setter TargetName="border" Property="Background" Value="#252B2D"/>
                             <Setter Property="Foreground" Value="#FFFFFF"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
@@ -384,8 +411,8 @@
         <Setter Property="Width" Value="22"/>
         <Setter Property="Height" Value="22"/>
         <Setter Property="FontSize" Value="11"/>
-        <Setter Property="Foreground" Value="#FFFFFF"/>
-        <Setter Property="Background" Value="#26292D"/>
+        <Setter Property="Foreground" Value="#F4F6F7"/>
+        <Setter Property="Background" Value="#1D2224"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
@@ -398,7 +425,7 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="#555860"/>
+                            <Setter TargetName="border" Property="Background" Value="#252B2D"/>
                             <Setter Property="Foreground" Value="#FFFFFF"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
@@ -420,9 +447,9 @@
 
     <!-- ============== DARK TOOLTIP STYLE ============== -->
     <Style TargetType="ToolTip">
-        <Setter Property="Background" Value="#2D3035"/>
-        <Setter Property="Foreground" Value="#FFFFFF"/>
-        <Setter Property="BorderBrush" Value="#454A52"/>
+        <Setter Property="Background" Value="#1D2224"/>
+        <Setter Property="Foreground" Value="#F4F6F7"/>
+        <Setter Property="BorderBrush" Value="#252B2D"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="FontSize" Value="11"/>
         <Setter Property="FontFamily" Value="Segoe UI"/>

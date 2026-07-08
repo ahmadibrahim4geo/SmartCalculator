@@ -16,10 +16,38 @@
         UseLayoutRounding="True"
         SnapsToDevicePixels="True"
         KeyboardNavigation.TabNavigation="None"
-        PreviewKeyDown="Window_PreviewKeyDown">
+        PreviewKeyDown="Window_PreviewKeyDown"
+        PreviewKeyUp="Window_PreviewKeyUp">
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
         <vm:BooleanToOpacityConverter x:Key="BoolToOpacity"/>
+        
+        <Style x:Key="HelpButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="#A0AEC0"/>
+            <Setter Property="FontSize" Value="9"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalAlignment" Value="Right"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <TextBlock Text="{TemplateBinding Content}"
+                                   TextDecorations="Underline"
+                                   Foreground="{TemplateBinding Foreground}"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Foreground" Value="#F1F3F5"/>
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Foreground" Value="#A0AEC0"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
     </Window.Resources>
 
     <Border Margin="0" CornerRadius="32" Background="#050606">
@@ -29,7 +57,7 @@
 
         <!-- Calculator body -->
         <Border CornerRadius="26" Margin="6" BorderBrush="#1D2123" BorderThickness="1"
-                Background="{StaticResource BodyGradient}">
+                Background="{DynamicResource BodyGradient}">
             <Border.Effect>
                 <DropShadowEffect BlurRadius="4" ShadowDepth="2" Color="#000000" Opacity="0.15" Direction="270"/>
             </Border.Effect>
@@ -94,21 +122,40 @@
                         </Grid>
                     </Border>
 
-                    <!-- Top-right buttons: About + Pin + Close -->
-                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Top" Margin="0,1,0,0">
-                        <Button Content="&#x24D8;" Style="{StaticResource PinButtonStyle}"
-                                Command="{Binding InputCommand}" CommandParameter="ABOUT"
+                    <!-- Top-right buttons: About + Pin + Close + Help underneath -->
+                    <Grid Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,1,0,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <StackPanel Grid.Row="0" Orientation="Horizontal">
+                             <Button Content="&#x24D8;" Style="{DynamicResource PinButtonStyle}"
+                                     Command="{Binding InputCommand}" CommandParameter="ABOUT"
+                                     ToolTipService.HasDropShadow="False"
+                                     ToolTip="About: Show information"/>
+                             <Button x:Name="ThemeButton" Content="&#x1F3A8;" Style="{DynamicResource PinButtonStyle}"
+                                     PreviewMouseLeftButtonDown="ThemeButton_PreviewMouseLeftButtonDown"
+                                     PreviewMouseLeftButtonUp="ThemeButton_PreviewMouseLeftButtonUp"
+                                     Margin="4,0,0,0"
+                                     ToolTipService.HasDropShadow="False"
+                                     ToolTip="Theme: Click to cycle, hold down for selection menu"/>
+                             <Button x:Name="PinButton" Content="&#x1F4CC;" Style="{DynamicResource PinButtonStyle}"
+                                     Click="PinButton_Click" Margin="4,0,0,0"
+                                     ToolTipService.HasDropShadow="False"
+                                     ToolTip="Always on Top: Pin window on top of others"/>
+                             <Button Content="&#x2715;" Style="{DynamicResource CloseButtonStyle}"
+                                     Click="CloseButton_Click" Margin="6,0,0,0"
+                                     ToolTipService.HasDropShadow="False"
+                                     ToolTip="Close: Close calculator"/>
+                        </StackPanel>
+                        
+                        <Button Grid.Row="1" x:Name="HelpButton" Content="Help"
+                                Style="{StaticResource HelpButtonStyle}"
+                                Click="HelpButton_Click"
+                                Margin="0,3,2,0"
                                 ToolTipService.HasDropShadow="False"
-                                ToolTip="About"/>
-                        <Button x:Name="PinButton" Content="&#x1F4CC;" Style="{StaticResource PinButtonStyle}"
-                                Click="PinButton_Click" Margin="4,0,0,0"
-                                ToolTipService.HasDropShadow="False"
-                                ToolTip="Always on Top"/>
-                        <Button Content="&#x2715;" Style="{StaticResource CloseButtonStyle}"
-                                Click="CloseButton_Click" Margin="6,0,0,0"
-                                ToolTipService.HasDropShadow="False"
-                                ToolTip="Close"/>
-                    </StackPanel>
+                                ToolTip="Help: Open user manual (CHM/HTML)"/>
+                    </Grid>
                 </Grid>
 
                 <!-- ========== ROW 1: LCD DISPLAY ========== -->
@@ -117,7 +164,7 @@
                         Padding="6">
                     <Border CornerRadius="7,7,13,13" Background="#536051"
                             BorderBrush="#657164" BorderThickness="1" Padding="4">
-                        <Border CornerRadius="5,5,11,11" Background="{StaticResource LCDBackground}">
+                        <Border CornerRadius="5,5,11,11" Background="{DynamicResource LCDBackground}">
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
@@ -138,73 +185,88 @@
                                 </Rectangle>
 
                                 <!-- Status line: S A DEG HYP BASE DEC Math -->
-                                <Grid Grid.Row="0" Margin="9,6,9,0">
-                                     <Grid.ColumnDefinitions>
-                                         <ColumnDefinition Width="Auto"/>
-                                         <ColumnDefinition Width="Auto"/>
-                                         <ColumnDefinition Width="Auto"/>
-                                         <ColumnDefinition Width="Auto"/>
-                                         <ColumnDefinition Width="Auto"/>
-                                         <ColumnDefinition Width="Auto"/>
-                                         <ColumnDefinition Width="Auto"/>
-                                         <ColumnDefinition Width="Auto"/>
-                                         <ColumnDefinition Width="Auto"/>
-                                         <ColumnDefinition Width="Auto"/>
-                                         <ColumnDefinition Width="Auto"/>
-                                         <ColumnDefinition Width="Auto"/>
-                                         <ColumnDefinition Width="*"/>
-                                         <ColumnDefinition Width="Auto"/>
-                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="S" Style="{StaticResource LcdStatusText}"
-                                               Opacity="{Binding IsShiftActive, Converter={StaticResource BoolToOpacity}}"
-                                               Margin="0,0,4,0"/>
-                                    <TextBlock Grid.Column="1" Text="A" Style="{StaticResource LcdStatusText}"
-                                               Foreground="#8B3A3A"
-                                               Opacity="{Binding IsAlphaActive, Converter={StaticResource BoolToOpacity}}"
-                                               Margin="0,0,10,0"/>
-                                    <TextBlock Grid.Column="2"
-                                               Text="{Binding AngleModeText, FallbackValue='DEG'}"
-                                               Style="{StaticResource LcdStatusText}" Margin="0,0,4,0"/>
-                                    <TextBlock Grid.Column="3" Text="HYP" Style="{StaticResource LcdStatusText}"
-                                               Foreground="#3A6B8B"
-                                               Visibility="{Binding IsHypActive, Converter={StaticResource BoolToVis}}"
-                                               Margin="0,0,4,0"/>
-                                    <TextBlock Grid.Column="4" Text="STAT" Style="{StaticResource LcdStatusText}"
-                                               Foreground="#3A6B8B"
-                                               Visibility="{Binding IsStatsActive, Converter={StaticResource BoolToVis}}"
-                                               Margin="0,0,2,0"/>
-                                    <TextBlock Grid.Column="5" Text="BASE" Style="{StaticResource LcdStatusText}"
-                                               Foreground="#3A6B8B"
-                                               Visibility="{Binding IsBaseNActive, Converter={StaticResource BoolToVis}}"
-                                               Margin="0,0,2,0"/>
-                                    <TextBlock Grid.Column="6" Text="CMPLX" Style="{StaticResource LcdStatusText}"
-                                               Foreground="#3A6B8B"
-                                               Visibility="{Binding IsCmplxActive, Converter={StaticResource BoolToVis}}"
-                                               Margin="0,0,2,0"/>
-                                     <TextBlock Grid.Column="7" Text="MATRIX" Style="{StaticResource LcdStatusText}"
-                                                 Foreground="#3A6B8B"
-                                                 Visibility="{Binding IsMatrixActive, Converter={StaticResource BoolToVis}}"
-                                                 Margin="0,0,2,0"/>
-                                      <TextBlock Grid.Column="8" Text="EQN" Style="{StaticResource LcdStatusText}"
-                                                 Foreground="#3A6B8B"
-                                                 Visibility="{Binding IsEqnActive, Converter={StaticResource BoolToVis}}"
-                                                 Margin="0,0,2,0"/>
-                                      <TextBlock Grid.Column="9" Text="VECTOR" Style="{StaticResource LcdStatusText}"
-                                                 Foreground="#3A6B8B"
-                                                 Visibility="{Binding IsVectorActive, Converter={StaticResource BoolToVis}}"
-                                                 Margin="0,0,2,0"/>
-                                      <TextBlock Grid.Column="10" Text="TABLE" Style="{StaticResource LcdStatusText}"
-                                                 Foreground="#3A6B8B"
-                                                 Visibility="{Binding IsTableActive, Converter={StaticResource BoolToVis}}"
-                                                 Margin="0,0,2,0"/>
-                                      <TextBlock Grid.Column="11"
-                                                 Text="{Binding BaseLabel, FallbackValue='DEC'}"
-                                                 Style="{StaticResource LcdStatusText}"
-                                                 Foreground="#3A6B8B"
-                                                 Visibility="{Binding IsBaseActive, Converter={StaticResource BoolToVis}}"
-                                                 Margin="0,0,4,0"/>
-                                      <TextBlock Grid.Column="13" Text="Math" Style="{StaticResource LcdStatusText}"
-                                                 HorizontalAlignment="Right"/>
+                                 <Grid Grid.Row="0" Margin="9,6,9,0">
+                                      <Grid.ColumnDefinitions>
+                                          <ColumnDefinition Width="Auto"/>
+                                          <ColumnDefinition Width="Auto"/>
+                                          <ColumnDefinition Width="Auto"/>
+                                          <ColumnDefinition Width="Auto"/>
+                                          <ColumnDefinition Width="Auto"/>
+                                          <ColumnDefinition Width="Auto"/>
+                                          <ColumnDefinition Width="Auto"/>
+                                          <ColumnDefinition Width="Auto"/>
+                                          <ColumnDefinition Width="Auto"/>
+                                          <ColumnDefinition Width="Auto"/>
+                                          <ColumnDefinition Width="Auto"/>
+                                          <ColumnDefinition Width="Auto"/>
+                                          <ColumnDefinition Width="Auto"/>
+                                          <ColumnDefinition Width="Auto"/>
+                                          <ColumnDefinition Width="*"/>
+                                          <ColumnDefinition Width="Auto"/>
+                                      </Grid.ColumnDefinitions>
+                                     <TextBlock Grid.Column="0" Text="S" Style="{DynamicResource LcdStatusText}"
+                                                Opacity="{Binding IsShiftActive, Converter={StaticResource BoolToOpacity}}"
+                                                Margin="0,0,4,0"/>
+                                     <TextBlock Grid.Column="1" Text="A" Style="{DynamicResource LcdStatusText}"
+                                                Foreground="#8B3A3A"
+                                                Opacity="{Binding IsAlphaActive, Converter={StaticResource BoolToOpacity}}"
+                                                Margin="0,0,6,0"/>
+                                     <TextBlock Grid.Column="2" Text="M" Style="{DynamicResource LcdStatusText}"
+                                                Opacity="{Binding IsMemoryActive, Converter={StaticResource BoolToOpacity}}"
+                                                Margin="0,0,4,0"/>
+                                     <TextBlock Grid.Column="3" Text="STO" Style="{DynamicResource LcdStatusText}"
+                                                Opacity="{Binding IsStoreActive, Converter={StaticResource BoolToOpacity}}"
+                                                Margin="0,0,10,0"/>
+                                     <TextBlock Grid.Column="4"
+                                                Text="{Binding AngleModeText, FallbackValue='DEG'}"
+                                                Style="{DynamicResource LcdStatusText}" Margin="0,0,4,0"/>
+                                     <TextBlock Grid.Column="5" Text="HYP" Style="{DynamicResource LcdStatusText}"
+                                                Foreground="#3A6B8B"
+                                                Visibility="{Binding IsHypActive, Converter={StaticResource BoolToVis}}"
+                                                Margin="0,0,4,0"/>
+                                     <TextBlock Grid.Column="6" Text="STAT" Style="{DynamicResource LcdStatusText}"
+                                                Foreground="#3A6B8B"
+                                                Visibility="{Binding IsStatsActive, Converter={StaticResource BoolToVis}}"
+                                                Margin="0,0,2,0"/>
+                                     <TextBlock Grid.Column="7" Text="BASE" Style="{DynamicResource LcdStatusText}"
+                                                Foreground="#3A6B8B"
+                                                Visibility="{Binding IsBaseNActive, Converter={StaticResource BoolToVis}}"
+                                                Margin="0,0,2,0"/>
+                                     <TextBlock Grid.Column="8" Text="CMPLX" Style="{DynamicResource LcdStatusText}"
+                                                Foreground="#3A6B8B"
+                                                Visibility="{Binding IsCmplxActive, Converter={StaticResource BoolToVis}}"
+                                                Margin="0,0,2,0"/>
+                                      <TextBlock Grid.Column="9" Text="MATRIX" Style="{DynamicResource LcdStatusText}"
+                                                  Foreground="#3A6B8B"
+                                                  Visibility="{Binding IsMatrixActive, Converter={StaticResource BoolToVis}}"
+                                                  Margin="0,0,2,0"/>
+                                       <TextBlock Grid.Column="10" Text="EQN" Style="{DynamicResource LcdStatusText}"
+                                                  Foreground="#3A6B8B"
+                                                  Visibility="{Binding IsEqnActive, Converter={StaticResource BoolToVis}}"
+                                                  Margin="0,0,2,0"/>
+                                       <TextBlock Grid.Column="11" Text="VECTOR" Style="{DynamicResource LcdStatusText}"
+                                                  Foreground="#3A6B8B"
+                                                  Visibility="{Binding IsVectorActive, Converter={StaticResource BoolToVis}}"
+                                                  Margin="0,0,2,0"/>
+                                       <TextBlock Grid.Column="12" Text="TABLE" Style="{DynamicResource LcdStatusText}"
+                                                  Foreground="#3A6B8B"
+                                                  Visibility="{Binding IsTableActive, Converter={StaticResource BoolToVis}}"
+                                                  Margin="0,0,2,0"/>
+                                       <TextBlock Grid.Column="13"
+                                                  Text="{Binding BaseLabel, FallbackValue='DEC'}"
+                                                  Style="{DynamicResource LcdStatusText}"
+                                                  Foreground="#3A6B8B"
+                                                  Visibility="{Binding IsBaseActive, Converter={StaticResource BoolToVis}}"
+                                                  Margin="0,0,4,0"/>
+                                       <TextBlock Grid.Column="14"
+                                                  Text="{Binding ActiveThemeName}"
+                                                  Style="{DynamicResource LcdStatusText}"
+                                                  Foreground="#5E6B5E"
+                                                  Opacity="0.80"
+                                                  HorizontalAlignment="Right"
+                                                  Margin="0,0,10,0"/>
+                                       <TextBlock Grid.Column="15" Text="Math" Style="{DynamicResource LcdStatusText}"
+                                                  HorizontalAlignment="Right"/>
                                 </Grid>
 
                                 <!-- Expression line -->
@@ -280,17 +342,58 @@
                                     </Grid>
                                 </Border>
 
+                                 <!-- BASE-N Multi-Display -->
+                                 <StackPanel Grid.Row="3"
+                                             Visibility="{Binding IsBaseNActive, Converter={StaticResource BoolToVis}}"
+                                             HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                                             Margin="9,0,9,5">
+                                     <TextBlock Text="{Binding BaseNDecDisplay}" Foreground="{Binding ResultBrush}" FontSize="10" FontFamily="Consolas" FontWeight="SemiBold"/>
+                                     <TextBlock Text="{Binding BaseNHexDisplay}" Foreground="{Binding ResultBrush}" FontSize="10" FontFamily="Consolas" FontWeight="SemiBold"/>
+                                     <TextBlock Text="{Binding BaseNBinDisplay}" Foreground="{Binding ResultBrush}" FontSize="10" FontFamily="Consolas" FontWeight="SemiBold"/>
+                                     <TextBlock Text="{Binding BaseNOctDisplay}" Foreground="{Binding ResultBrush}" FontSize="10" FontFamily="Consolas" FontWeight="SemiBold"/>
+                                 </StackPanel>
+
+                                 <!-- ========== ERROR DISPLAY OVERLAY ========== -->
+                                 <Grid Grid.Row="1" Grid.RowSpan="3"
+                                       Visibility="{Binding HasError, Converter={StaticResource BoolToVis}}"
+                                       Panel.ZIndex="4" Margin="4,0,4,2"
+                                       Background="{DynamicResource LCDBackground}">
+                                     <Grid.RowDefinitions>
+                                         <RowDefinition Height="*"/>
+                                         <RowDefinition Height="Auto"/>
+                                     </Grid.RowDefinitions>
+                                     
+                                     <!-- Error Title -->
+                                     <TextBlock Grid.Row="0"
+                                                Text="{Binding ErrorTitleText}"
+                                                Foreground="{DynamicResource LCDTextBrush}"
+                                                FontSize="22" FontWeight="ExtraBold" FontFamily="Consolas"
+                                                HorizontalAlignment="Left" VerticalAlignment="Center"
+                                                Margin="12,12,0,0"/>
+                                     
+                                     <!-- Error Help/Options -->
+                                     <StackPanel Grid.Row="1" Margin="12,0,0,10" Orientation="Vertical">
+                                         <TextBlock Text="[◀] [▶] :Go to"
+                                                    Foreground="{DynamicResource LCDTextBrush}"
+                                                    FontSize="11" FontFamily="Consolas" FontWeight="SemiBold"
+                                                    Visibility="{Binding IsSyntaxError, Converter={StaticResource BoolToVis}}"/>
+                                         <TextBlock Text="[AC]    :Cancel"
+                                                    Foreground="{DynamicResource LCDTextBrush}"
+                                                    FontSize="11" FontFamily="Consolas" FontWeight="SemiBold"/>
+                                     </StackPanel>
+                                 </Grid>
+
                                 <!-- ========== SETUP INSIDE LCD (replaces rows 1-3) ========== -->
                                 <Grid Grid.Row="1" Grid.RowSpan="3"
                                       Visibility="{Binding ShowSetup, Converter={StaticResource BoolToVis}}"
                                       Panel.ZIndex="5" Margin="4,0,4,2"
-                                      Background="{StaticResource LCDBackground}">
+                                      Background="{DynamicResource LCDBackground}">
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="*"/>
                                     </Grid.RowDefinitions>
                                     <TextBlock Grid.Row="0" Text="MODE SETUP"
-                                               Foreground="{StaticResource LCDTextBrush}"
+                                               Foreground="{DynamicResource LCDTextBrush}"
                                                FontSize="11" FontWeight="ExtraBold" FontFamily="Consolas"
                                                Margin="2,2,0,1"/>
                                     <ItemsControl Grid.Row="1"
@@ -303,7 +406,7 @@
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
                                                 <TextBlock Text="{Binding}"
-                                                           Foreground="{StaticResource LCDTextBrush}"
+                                                           Foreground="{DynamicResource LCDTextBrush}"
                                                            FontSize="11" FontWeight="SemiBold"
                                                            FontFamily="Consolas"
                                                            Width="100" Margin="4,1,0,1"/>
@@ -316,7 +419,7 @@
                                 <Grid Grid.Row="1" Grid.RowSpan="3"
                                       Visibility="{Binding ShowAbout, Converter={StaticResource BoolToVis}}"
                                       Panel.ZIndex="6" Margin="4,0,4,2"
-                                      Background="{StaticResource LCDBackground}">
+                                      Background="{DynamicResource LCDBackground}">
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="Auto"/>
@@ -324,12 +427,12 @@
                                     </Grid.RowDefinitions>
                                     <!-- Page indicator -->
                                     <TextBlock Grid.Row="0" Text="{Binding AboutPageText}"
-                                               Foreground="{StaticResource LCDTextBrush}"
+                                               Foreground="{DynamicResource LCDTextBrush}"
                                                FontSize="10" FontWeight="ExtraBold" FontFamily="Consolas"
                                                Margin="2,2,0,1"/>
                                     <!-- Title -->
                                     <TextBlock Grid.Row="1" Text="SmartCalculator"
-                                               Foreground="{StaticResource LCDTextBrush}"
+                                               Foreground="{DynamicResource LCDTextBrush}"
                                                FontSize="12" FontWeight="ExtraBold" FontFamily="Consolas"
                                                HorizontalAlignment="Center" Margin="0,2,0,2"/>
                                     <!-- About lines -->
@@ -343,13 +446,121 @@
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
                                                 <TextBlock Text="{Binding}"
-                                                           Foreground="{StaticResource LCDTextBrush}"
+                                                           Foreground="{DynamicResource LCDTextBrush}"
                                                            FontSize="10" FontWeight="SemiBold"
                                                            FontFamily="Consolas"
                                                            Margin="4,1,0,0"/>
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
+                                </Grid>
+
+                                <!-- ========== CONSTANTS INSIDE LCD ========== -->
+                                <Grid Grid.Row="1" Grid.RowSpan="3"
+                                      Visibility="{Binding ShowConstants, Converter={StaticResource BoolToVis}}"
+                                      Panel.ZIndex="7" Margin="4,0,4,2"
+                                      Background="{DynamicResource LCDBackground}">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Grid.Row="0" Text="SCIENTIFIC CONSTANTS"
+                                               Foreground="{DynamicResource LCDTextBrush}"
+                                               FontSize="11" FontWeight="ExtraBold" FontFamily="Consolas"
+                                               Margin="2,2,0,1"/>
+                                    <ListBox Grid.Row="1"
+                                             ItemsSource="{Binding ConstantDisplayItems}"
+                                             SelectedIndex="{Binding ConstantsSelectedIndex}"
+                                             Background="Transparent" BorderThickness="0"
+                                             Foreground="{DynamicResource LCDTextBrush}"
+                                             FontFamily="Consolas" FontSize="10"
+                                             ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                             SelectionChanged="ListBox_SelectionChanged">
+                                        <ListBox.ItemContainerStyle>
+                                            <Style TargetType="ListBoxItem">
+                                                <Setter Property="Padding" Value="2,1"/>
+                                                <Style.Triggers>
+                                                    <Trigger Property="IsSelected" Value="True">
+                                                        <Setter Property="Background" Value="#3D5341"/>
+                                                        <Setter Property="Foreground" Value="#161B18"/>
+                                                    </Trigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </ListBox.ItemContainerStyle>
+                                    </ListBox>
+                                </Grid>
+
+                                <!-- ========== CONVERSIONS INSIDE LCD ========== -->
+                                <Grid Grid.Row="1" Grid.RowSpan="3"
+                                      Visibility="{Binding ShowConversions, Converter={StaticResource BoolToVis}}"
+                                      Panel.ZIndex="8" Margin="4,0,4,2"
+                                      Background="{DynamicResource LCDBackground}">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Grid.Row="0" Text="UNIT CONVERSIONS"
+                                               Foreground="{DynamicResource LCDTextBrush}"
+                                               FontSize="11" FontWeight="ExtraBold" FontFamily="Consolas"
+                                               Margin="2,2,0,1"/>
+                                    <ListBox Grid.Row="1"
+                                             ItemsSource="{Binding ConversionDisplayItems}"
+                                             SelectedIndex="{Binding ConversionsSelectedIndex}"
+                                             Background="Transparent" BorderThickness="0"
+                                             Foreground="{DynamicResource LCDTextBrush}"
+                                             FontFamily="Consolas" FontSize="10"
+                                             ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                             SelectionChanged="ListBox_SelectionChanged">
+                                        <ListBox.ItemContainerStyle>
+                                            <Style TargetType="ListBoxItem">
+                                                <Setter Property="Padding" Value="2,1"/>
+                                                <Style.Triggers>
+                                                    <Trigger Property="IsSelected" Value="True">
+                                                        <Setter Property="Background" Value="#3D5341"/>
+                                                        <Setter Property="Foreground" Value="#161B18"/>
+                                                    </Trigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </ListBox.ItemContainerStyle>
+                                    </ListBox>
+                                </Grid>
+
+                                <!-- ========== THEMES MENU INSIDE LCD ========== -->
+                                <Grid Grid.Row="1" Grid.RowSpan="3"
+                                      Visibility="{Binding ShowThemesMenu, Converter={StaticResource BoolToVis}}"
+                                      Panel.ZIndex="9" Margin="4,0,4,2"
+                                      Background="{DynamicResource LCDBackground}">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Grid.Row="0" Text="SELECT THEME"
+                                               Foreground="{DynamicResource LCDTextBrush}"
+                                               FontSize="11" FontWeight="ExtraBold" FontFamily="Consolas"
+                                               Margin="2,2,0,1"/>
+                                    <ListBox Grid.Row="1"
+                                             ItemsSource="{Binding ThemeDisplayItems}"
+                                             SelectedIndex="{Binding ThemesSelectedIndex}"
+                                             Background="Transparent" BorderThickness="0"
+                                             Foreground="{DynamicResource LCDTextBrush}"
+                                             FontFamily="Consolas" FontSize="10"
+                                             ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                             SelectionChanged="ListBox_SelectionChanged">
+                                        <ListBox.ItemContainerStyle>
+                                            <Style TargetType="ListBoxItem">
+                                                <Setter Property="Padding" Value="2,1"/>
+                                                <Style.Triggers>
+                                                    <Trigger Property="IsSelected" Value="True">
+                                                        <Setter Property="Background" Value="#3D5341"/>
+                                                        <Setter Property="Foreground" Value="#161B18"/>
+                                                    </Trigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </ListBox.ItemContainerStyle>
+                                    </ListBox>
                                 </Grid>
                             </Grid>
                         </Border>
@@ -377,13 +588,15 @@
                                        FontWeight="ExtraBold" HorizontalAlignment="Center" Margin="2,0,2,0" LineHeight="11"/>
                         </Grid>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                            <Button Width="45" Height="30" Style="{StaticResource OvalKeyStyle}"
-                                    Command="{Binding InputCommand}" CommandParameter="SHIFT" Margin="0,0,5,0"/>
-                            <Button Width="45" Height="30" Style="{StaticResource OvalKeyStyle}"
-                                    Command="{Binding InputCommand}" CommandParameter="ALPHA" Margin="5,0,0,0"/>
+                            <Button Width="45" Height="30" Style="{DynamicResource OvalKeyStyle}"
+                                    Command="{Binding InputCommand}" CommandParameter="SHIFT" Margin="0,0,5,0"
+                                    ToolTip="SHIFT: Activate secondary functions (yellow labels)"/>
+                            <Button Width="45" Height="30" Style="{DynamicResource OvalKeyStyle}"
+                                    Command="{Binding InputCommand}" CommandParameter="ALPHA" Margin="5,0,0,0"
+                                    ToolTip="ALPHA: Activate variables/constants mode (red labels)"/>
                         </StackPanel>
                     </StackPanel>
-
+ 
                     <!-- Center: DPad navigation - true oval shape matching HTML border-radius: 50% -->
                     <Grid Grid.Column="1" Width="122" Height="72"
                           HorizontalAlignment="Center" VerticalAlignment="Center">
@@ -400,33 +613,34 @@
                             </Ellipse.Fill>
                         </Ellipse>
                         <Grid Margin="0,0,0,0">
-                            <!-- Inner inset ellipse -->
-                            <Ellipse Width="60" Height="42" Stroke="#18FFFFFF" StrokeThickness="1"
-                                     IsHitTestVisible="False">
-                                <Ellipse.Fill>
-                                    <SolidColorBrush Color="#00000000"/>
-                                </Ellipse.Fill>
-                            </Ellipse>
-                            <!-- NAV label -->
-                            <TextBlock Text="NAV" Foreground="#F4F6F7" FontSize="10" FontWeight="ExtraBold"
-                                       HorizontalAlignment="Center" VerticalAlignment="Center"
-                                       IsHitTestVisible="False" Opacity="0.60"/>
+                            <!-- NAV Button -->
+                            <Button x:Name="DpadNav" Width="60" Height="42"
+                                    Command="{Binding InputCommand}" CommandParameter="NAV"
+                                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                                    Style="{DynamicResource DpadCenterButtonStyle}"
+                                    ToolTip="NAV: Confirm menu selection">
+                                <TextBlock Text="NAV" Foreground="#F4F6F7" FontSize="10" FontWeight="ExtraBold" Opacity="0.60"/>
+                            </Button>
                             <!-- Arrow buttons -->
-                            <Button Content="▲" FontSize="14" Style="{StaticResource DpadButtonStyle}"
+                            <Button x:Name="DpadUp" Content="▲" FontSize="14" Style="{DynamicResource DpadButtonStyle}"
                                     Command="{Binding InputCommand}" CommandParameter="UP"
-                                    HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,5,0,0"/>
-                            <Button Content="▼" FontSize="14" Style="{StaticResource DpadButtonStyle}"
+                                    HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,5,0,0"
+                                    ToolTip="UP: Navigate up / scroll previous history"/>
+                            <Button x:Name="DpadDown" Content="▼" FontSize="14" Style="{DynamicResource DpadButtonStyle}"
                                     Command="{Binding InputCommand}" CommandParameter="DOWN"
-                                    HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,4"/>
-                            <Button Content="◀" FontSize="13" Style="{StaticResource DpadButtonStyle}"
+                                    HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,4"
+                                    ToolTip="DOWN: Navigate down / scroll next history"/>
+                            <Button x:Name="DpadLeft" Content="◀" FontSize="13" Style="{DynamicResource DpadButtonStyle}"
                                     Command="{Binding InputCommand}" CommandParameter="LEFT"
-                                    HorizontalAlignment="Left" VerticalAlignment="Center" Margin="9,0,0,0"/>
-                            <Button Content="▶" FontSize="13" Style="{StaticResource DpadButtonStyle}"
+                                    HorizontalAlignment="Left" VerticalAlignment="Center" Margin="9,0,0,0"
+                                    ToolTip="LEFT: Move cursor left"/>
+                            <Button x:Name="DpadRight" Content="▶" FontSize="13" Style="{DynamicResource DpadButtonStyle}"
                                     Command="{Binding InputCommand}" CommandParameter="RIGHT"
-                                    HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,9,0"/>
+                                    HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,9,0"
+                                    ToolTip="RIGHT: Move cursor right"/>
                         </Grid>
                     </Grid>
-
+ 
                     <!-- Right: MODE / ON ovals -->
                     <StackPanel Grid.Column="2" VerticalAlignment="Center">
                         <Grid Margin="0,0,0,5">
@@ -444,10 +658,12 @@
                                        FontWeight="ExtraBold" HorizontalAlignment="Center" Margin="2,0,2,0" LineHeight="12"/>
                         </Grid>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                            <Button Width="45" Height="30" Style="{StaticResource OvalKeyStyle}"
-                                    Command="{Binding InputCommand}" CommandParameter="MODE" Margin="0,0,5,0"/>
-                            <Button Width="45" Height="30" Style="{StaticResource OvalKeyStyle}"
-                                    Command="{Binding InputCommand}" CommandParameter="ON" Margin="5,0,0,0"/>
+                            <Button Width="45" Height="30" Style="{DynamicResource OvalKeyStyle}"
+                                    Command="{Binding InputCommand}" CommandParameter="MODE" Margin="0,0,5,0"
+                                    ToolTip="MODE: Switch calculator modes (COMP, CMPLX, STAT, etc.) / SETUP"/>
+                            <Button Width="45" Height="30" Style="{DynamicResource OvalKeyStyle}"
+                                    Command="{Binding InputCommand}" CommandParameter="ON" Margin="5,0,0,0"
+                                    ToolTip="ON: Turn on calculator / clear screen"/>
                         </StackPanel>
                     </StackPanel>
                 </Grid>
@@ -471,33 +687,33 @@
                         <!-- CALC -->
                         <Button Grid.Column="0" Content="CALC"
                                 vm:ButtonExtensions.SecondaryLabel="SOLVE"
-                                Style="{StaticResource ScienceKeyStyle}"
+                                Style="{DynamicResource ScienceKeyStyle}"
                                 Command="{Binding InputCommand}" CommandParameter="CALC"/>
                         <!-- ∫ icon with placeholder box -->
                         <Button Grid.Column="1"
                                 vm:ButtonExtensions.SecondaryLabel="d/dx" vm:ButtonExtensions.AlphaLabel="&#x2022;"
-                                Style="{StaticResource ScienceKeyStyle}"
+                                Style="{DynamicResource ScienceKeyStyle}"
                                 Command="{Binding InputCommand}" CommandParameter="INTEGRAL">
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <TextBlock Text="&#x222B;" FontSize="16"/>
-                                <Border Style="{StaticResource PlaceholderBoxStyle}"
-                                        BorderBrush="{StaticResource KeyTextBrush}" Margin="1,0,0,0"/>
+                                <Border Style="{DynamicResource PlaceholderBoxStyle}"
+                                        BorderBrush="{DynamicResource KeyTextBrush}" Margin="1,0,0,0"/>
                             </StackPanel>
                         </Button>
                         <!-- x⁻¹ -->
                         <Button Grid.Column="2" Content="x&#x207B;&#x00B9;"
                                 vm:ButtonExtensions.SecondaryLabel="x!"
-                                Style="{StaticResource ScienceKeyStyle}"
+                                Style="{DynamicResource ScienceKeyStyle}"
                                 Command="{Binding InputCommand}" CommandParameter="INVERSE"/>
                         <!-- log with placeholder box -->
                         <Button Grid.Column="3"
                                 vm:ButtonExtensions.SecondaryLabel="&#x03A3;" vm:ButtonExtensions.AlphaLabel="&#x25A5;"
-                                Style="{StaticResource ScienceKeyStyle}"
+                                Style="{DynamicResource ScienceKeyStyle}"
                                 Command="{Binding InputCommand}" CommandParameter="LOGAB">
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <TextBlock Text="log" FontSize="15"/>
-                                <Border Style="{StaticResource PlaceholderBoxStyle}"
-                                        BorderBrush="{StaticResource KeyTextBrush}" Margin="1,0,0,0"/>
+                                <Border Style="{DynamicResource PlaceholderBoxStyle}"
+                                        BorderBrush="{DynamicResource KeyTextBrush}" Margin="1,0,0,0"/>
                             </StackPanel>
                         </Button>
                     </Grid>
@@ -521,94 +737,94 @@
                         <!-- Sci Row 1: □/□ | √ | x² | xʸ | log | ln -->
                         <Button Grid.Row="0" Grid.Column="0"
                                 vm:ButtonExtensions.SecondaryLabel="a b/c" vm:ButtonExtensions.AlphaLabel="d/c"
-                                Style="{StaticResource ScienceKeyStyle}"
+                                Style="{DynamicResource ScienceKeyStyle}"
                                 Command="{Binding InputCommand}" CommandParameter="FRAC" FontSize="11">
                             <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <Border Style="{StaticResource PlaceholderBoxStyle}"
-                                        BorderBrush="{StaticResource KeyTextBrush}" Margin="1,1,1,0"/>
-                                <Border Height="1.5" Background="{StaticResource KeyTextBrush}" Margin="1,1" CornerRadius="0.5"/>
-                                <Border Style="{StaticResource PlaceholderBoxStyle}"
-                                        BorderBrush="{StaticResource KeyTextBrush}" Margin="1,0,1,1"/>
+                                <Border Style="{DynamicResource PlaceholderBoxStyle}"
+                                        BorderBrush="{DynamicResource KeyTextBrush}" Margin="1,1,1,0"/>
+                                <Border Height="1.5" Background="{DynamicResource KeyTextBrush}" Margin="1,1" CornerRadius="0.5"/>
+                                <Border Style="{DynamicResource PlaceholderBoxStyle}"
+                                        BorderBrush="{DynamicResource KeyTextBrush}" Margin="1,0,1,1"/>
                             </StackPanel>
                         </Button>
                         <Button Grid.Row="0" Grid.Column="1"
                                 vm:ButtonExtensions.SecondaryLabel="&#x221B;" vm:ButtonExtensions.AlphaLabel="i"
-                                Style="{StaticResource ScienceKeyStyle}"
+                                Style="{DynamicResource ScienceKeyStyle}"
                                 Command="{Binding InputCommand}" CommandParameter="√" FontSize="15">
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <TextBlock Text="&#x221A;" FontSize="15"/>
-                                <Border Style="{StaticResource PlaceholderBoxStyle}"
-                                        BorderBrush="{StaticResource KeyTextBrush}" Margin="1,1,0,0"/>
+                                <Border Style="{DynamicResource PlaceholderBoxStyle}"
+                                        BorderBrush="{DynamicResource KeyTextBrush}" Margin="1,1,0,0"/>
                             </StackPanel>
                         </Button>
                         <Button Grid.Row="0" Grid.Column="2" Content="x&#x00B2;"
                                 vm:ButtonExtensions.SecondaryLabel="x&#x00B3;" vm:ButtonExtensions.AlphaLabel="DEC"
-                                Style="{StaticResource ScienceKeyStyle}"
+                                Style="{DynamicResource ScienceKeyStyle}"
                                 Command="{Binding InputCommand}" CommandParameter="x²"/>
                         <Button Grid.Row="0" Grid.Column="3" Content="x&#x02B8;"
                                 vm:ButtonExtensions.SecondaryLabel="&#x02B8;&#x221A;x" vm:ButtonExtensions.AlphaLabel="HEX"
-                                Style="{StaticResource ScienceKeyStyle}"
+                                Style="{DynamicResource ScienceKeyStyle}"
                                 Command="{Binding InputCommand}" CommandParameter="xʸ"/>
                         <Button Grid.Row="0" Grid.Column="4" Content="log"
                                 vm:ButtonExtensions.SecondaryLabel="10&#x02E3;" vm:ButtonExtensions.AlphaLabel="BIN"
-                                Style="{StaticResource ScienceKeyStyle}"
+                                Style="{DynamicResource ScienceKeyStyle}"
                                 Command="{Binding InputCommand}" CommandParameter="log"/>
                         <Button Grid.Row="0" Grid.Column="5" Content="ln"
                                 vm:ButtonExtensions.SecondaryLabel="e&#x02E3;" vm:ButtonExtensions.AlphaLabel="OCT"
-                                Style="{StaticResource ScienceKeyStyle}"
+                                Style="{DynamicResource ScienceKeyStyle}"
                                 Command="{Binding InputCommand}" CommandParameter="ln"/>
 
                         <!-- Sci Row 2: (−) | °′″ | hyp | sin | cos | tan -->
                         <Button Grid.Row="1" Grid.Column="0" Content="&#x2212;"
                                 vm:ButtonExtensions.SecondaryLabel="&#x2190;" vm:ButtonExtensions.AlphaLabel="A"
-                                Style="{StaticResource ScienceKeyStyle}"
+                                Style="{DynamicResource ScienceKeyStyle}"
                                 Command="{Binding InputCommand}" CommandParameter="(-)"/>
-                        <Button Grid.Row="1" Grid.Column="1" Content="DMS"
+                        <Button Grid.Row="1" Grid.Column="1" Content="dms"
                                 vm:ButtonExtensions.SecondaryLabel="FACT" vm:ButtonExtensions.AlphaLabel="B"
-                                Style="{StaticResource ScienceKeyStyle}"
-                                Command="{Binding InputCommand}" CommandParameter="DMS" FontSize="13"
-                                ToolTip="DMS = Degree / Minute / Second"/>
+                                Style="{DynamicResource ScienceKeyStyle}"
+                                Command="{Binding InputCommand}" CommandParameter="DMS"
+                                ToolTip="dms: Degrees/Minutes/Seconds or FACT (Factorization)"/>
                         <Button Grid.Row="1" Grid.Column="2" Content="hyp"
                                 vm:ButtonExtensions.SecondaryLabel="Abs" vm:ButtonExtensions.AlphaLabel="C"
-                                Style="{StaticResource ScienceKeyStyle}"
+                                Style="{DynamicResource ScienceKeyStyle}"
                                 Command="{Binding InputCommand}" CommandParameter="HYP"/>
                         <Button Grid.Row="1" Grid.Column="3" Content="sin"
                                 vm:ButtonExtensions.SecondaryLabel="sin&#x207B;&#x00B9;" vm:ButtonExtensions.AlphaLabel="D"
-                                Style="{StaticResource ScienceKeyStyle}"
+                                Style="{DynamicResource ScienceKeyStyle}"
                                 Command="{Binding InputCommand}" CommandParameter="sin"/>
                         <Button Grid.Row="1" Grid.Column="4" Content="cos"
                                 vm:ButtonExtensions.SecondaryLabel="cos&#x207B;&#x00B9;" vm:ButtonExtensions.AlphaLabel="E"
-                                Style="{StaticResource ScienceKeyStyle}"
+                                Style="{DynamicResource ScienceKeyStyle}"
                                 Command="{Binding InputCommand}" CommandParameter="cos"/>
                         <Button Grid.Row="1" Grid.Column="5" Content="tan"
                                 vm:ButtonExtensions.SecondaryLabel="tan&#x207B;&#x00B9;" vm:ButtonExtensions.AlphaLabel="F"
-                                Style="{StaticResource ScienceKeyStyle}"
+                                Style="{DynamicResource ScienceKeyStyle}"
                                 Command="{Binding InputCommand}" CommandParameter="tan"/>
 
                         <!-- Sci Row 3: RCL | ENG | ( | ) | S⇔D | M+ -->
                         <Button Grid.Row="2" Grid.Column="0" Content="RCL"
                                 vm:ButtonExtensions.SecondaryLabel="STO"
-                                Style="{StaticResource ScienceKeyStyle}"
+                                Style="{DynamicResource ScienceKeyStyle}"
                                 Command="{Binding InputCommand}" CommandParameter="RCL"/>
                         <Button Grid.Row="2" Grid.Column="1" Content="ENG"
                                 vm:ButtonExtensions.SecondaryLabel="&#x2190;" vm:ButtonExtensions.AlphaLabel="i"
-                                Style="{StaticResource ScienceKeyStyle}"
+                                Style="{DynamicResource ScienceKeyStyle}"
                                 Command="{Binding InputCommand}" CommandParameter="ENG"/>
                         <Button Grid.Row="2" Grid.Column="2" Content="("
                                 vm:ButtonExtensions.SecondaryLabel="%" vm:ButtonExtensions.AlphaLabel="X"
-                                Style="{StaticResource ScienceKeyStyle}"
+                                Style="{DynamicResource ScienceKeyStyle}"
                                 Command="{Binding InputCommand}" CommandParameter="("/>
                         <Button Grid.Row="2" Grid.Column="3" Content=")"
                                 vm:ButtonExtensions.SecondaryLabel="," vm:ButtonExtensions.AlphaLabel="Y"
-                                Style="{StaticResource ScienceKeyStyle}"
+                                Style="{DynamicResource ScienceKeyStyle}"
                                 Command="{Binding InputCommand}" CommandParameter=")"/>
                         <Button Grid.Row="2" Grid.Column="4" Content="S&#x21D4;D"
                                 vm:ButtonExtensions.SecondaryLabel="a b/c" vm:ButtonExtensions.AlphaLabel="d/c"
-                                Style="{StaticResource ScienceKeyStyle}"
+                                Style="{DynamicResource ScienceKeyStyle}"
                                 Command="{Binding InputCommand}" CommandParameter="SD" FontSize="11"/>
                         <Button Grid.Row="2" Grid.Column="5" Content="M+"
                                 vm:ButtonExtensions.SecondaryLabel="M&#x2212;" vm:ButtonExtensions.AlphaLabel="M"
-                                Style="{StaticResource ScienceKeyStyle}"
+                                Style="{DynamicResource ScienceKeyStyle}"
                                 Command="{Binding InputCommand}" CommandParameter="M+"/>
                     </Grid>
 
@@ -631,87 +847,99 @@
                         <!-- Num Row 1: 7 | 8 | 9 | DEL | AC -->
                         <Button Grid.Row="0" Grid.Column="0" Content="7"
                                 vm:ButtonExtensions.SecondaryLabel="CONST"
-                                Style="{StaticResource NumberKeyStyle}"
-                                Command="{Binding InputCommand}" CommandParameter="7"/>
+                                Style="{DynamicResource NumberKeyStyle}"
+                                Command="{Binding InputCommand}" CommandParameter="7"
+                                ToolTip="7: Number 7 or CONST (Scientific Constants list)"/>
                         <Button Grid.Row="0" Grid.Column="1" Content="8"
                                 vm:ButtonExtensions.SecondaryLabel="CONV"
-                                Style="{StaticResource NumberKeyStyle}"
-                                Command="{Binding InputCommand}" CommandParameter="8"/>
+                                Style="{DynamicResource NumberKeyStyle}"
+                                Command="{Binding InputCommand}" CommandParameter="8"
+                                ToolTip="8: Number 8 or CONV (Unit Conversions list)"/>
                         <Button Grid.Row="0" Grid.Column="2" Content="9"
                                 vm:ButtonExtensions.SecondaryLabel="CLR"
-                                Style="{StaticResource NumberKeyStyle}"
-                                Command="{Binding InputCommand}" CommandParameter="9"/>
+                                Style="{DynamicResource NumberKeyStyle}"
+                                Command="{Binding InputCommand}" CommandParameter="9"
+                                ToolTip="9: Number 9 or CLR (Clear memory/setup)"/>
                         <Button Grid.Row="0" Grid.Column="3" Content="DEL"
-                                vm:ButtonExtensions.SecondaryLabel="INS" Style="{StaticResource ControlKeyStyle}"
-                                Command="{Binding InputCommand}" CommandParameter="DEL"/>
+                                vm:ButtonExtensions.SecondaryLabel="INS" Style="{DynamicResource ControlKeyStyle}"
+                                Command="{Binding InputCommand}" CommandParameter="DEL"
+                                ToolTip="DEL: Delete character at cursor or INS (Insert mode)"/>
                         <Button Grid.Row="0" Grid.Column="4" Content="AC"
-                                vm:ButtonExtensions.SecondaryLabel="OFF" Style="{StaticResource ControlKeyStyle}"
-                                Command="{Binding InputCommand}" CommandParameter="AC"/>
+                                vm:ButtonExtensions.SecondaryLabel="OFF" Style="{DynamicResource ControlKeyStyle}"
+                                Command="{Binding InputCommand}" CommandParameter="AC"
+                                ToolTip="AC: All Clear (reset screen) or OFF (Turn off)"/>
 
                         <!-- Num Row 2: 4 | 5 | 6 | × | ÷ -->
                         <Button Grid.Row="1" Grid.Column="0" Content="4"
                                 vm:ButtonExtensions.SecondaryLabel="MATRIX"
-                                Style="{StaticResource NumberKeyStyle}"
-                                Command="{Binding InputCommand}" CommandParameter="4"/>
+                                Style="{DynamicResource NumberKeyStyle}"
+                                Command="{Binding InputCommand}" CommandParameter="4"
+                                ToolTip="4: Number 4 or MATRIX mode"/>
                         <Button Grid.Row="1" Grid.Column="1" Content="5"
                                 vm:ButtonExtensions.SecondaryLabel="VECTOR"
-                                Style="{StaticResource NumberKeyStyle}"
-                                Command="{Binding InputCommand}" CommandParameter="5"/>
+                                Style="{DynamicResource NumberKeyStyle}"
+                                Command="{Binding InputCommand}" CommandParameter="5"
+                                ToolTip="5: Number 5 or VECTOR mode"/>
                         <Button Grid.Row="1" Grid.Column="2" Content="6"
                                 vm:ButtonExtensions.SecondaryLabel="VERIFY"
-                                Style="{StaticResource NumberKeyStyle}"
+                                Style="{DynamicResource NumberKeyStyle}"
                                 Command="{Binding InputCommand}" CommandParameter="6"/>
                         <Button Grid.Row="1" Grid.Column="3" Content="&#x00D7;"
                                 vm:ButtonExtensions.SecondaryLabel="nPr" vm:ButtonExtensions.AlphaLabel="GCD"
-                                Style="{StaticResource OperatorKeyStyle}"
+                                Style="{DynamicResource OperatorKeyStyle}"
                                 Command="{Binding InputCommand}" CommandParameter="×"/>
                         <Button Grid.Row="1" Grid.Column="4" Content="&#x00F7;"
                                 vm:ButtonExtensions.SecondaryLabel="nCr" vm:ButtonExtensions.AlphaLabel="LCM"
-                                Style="{StaticResource OperatorKeyStyle}"
+                                Style="{DynamicResource OperatorKeyStyle}"
                                 Command="{Binding InputCommand}" CommandParameter="÷"/>
 
                         <!-- Num Row 3: 1 | 2 | 3 | + | − -->
                         <Button Grid.Row="2" Grid.Column="0" Content="1"
                                 vm:ButtonExtensions.SecondaryLabel="STAT"
-                                Style="{StaticResource NumberKeyStyle}"
-                                Command="{Binding InputCommand}" CommandParameter="1"/>
+                                Style="{DynamicResource NumberKeyStyle}"
+                                Command="{Binding InputCommand}" CommandParameter="1"
+                                ToolTip="1: Number 1 or STAT mode"/>
                         <Button Grid.Row="2" Grid.Column="1" Content="2"
                                 vm:ButtonExtensions.SecondaryLabel="CMPLX"
-                                Style="{StaticResource NumberKeyStyle}"
-                                Command="{Binding InputCommand}" CommandParameter="2"/>
+                                Style="{DynamicResource NumberKeyStyle}"
+                                Command="{Binding InputCommand}" CommandParameter="2"
+                                ToolTip="2: Number 2 or CMPLX mode"/>
                         <Button Grid.Row="2" Grid.Column="2" Content="3"
                                 vm:ButtonExtensions.SecondaryLabel="BASE"
-                                Style="{StaticResource NumberKeyStyle}"
-                                Command="{Binding InputCommand}" CommandParameter="3"/>
+                                Style="{DynamicResource NumberKeyStyle}"
+                                Command="{Binding InputCommand}" CommandParameter="3"
+                                ToolTip="3: Number 3 or BASE-N mode"/>
                         <Button Grid.Row="2" Grid.Column="3" Content="+"
                                 vm:ButtonExtensions.SecondaryLabel="Pol" vm:ButtonExtensions.AlphaLabel="Int"
-                                Style="{StaticResource OperatorKeyStyle}"
+                                Style="{DynamicResource OperatorKeyStyle}"
                                 Command="{Binding InputCommand}" CommandParameter="+"/>
                         <Button Grid.Row="2" Grid.Column="4" Content="&#x2212;"
                                 vm:ButtonExtensions.SecondaryLabel="Rec" vm:ButtonExtensions.AlphaLabel="Intg"
-                                Style="{StaticResource OperatorKeyStyle}"
+                                Style="{DynamicResource OperatorKeyStyle}"
                                 Command="{Binding InputCommand}" CommandParameter="−"/>
 
                         <!-- Num Row 4: 0 | . | ×10ˣ | Ans | = -->
                         <Button Grid.Row="3" Grid.Column="0" Content="0"
                                 vm:ButtonExtensions.SecondaryLabel="Rnd"
-                                Style="{StaticResource NumberKeyStyle}"
+                                Style="{DynamicResource NumberKeyStyle}"
                                 Command="{Binding InputCommand}" CommandParameter="0"/>
                         <Button Grid.Row="3" Grid.Column="1" Content="."
                                 vm:ButtonExtensions.SecondaryLabel="Ran#" vm:ButtonExtensions.AlphaLabel="RanInt"
-                                Style="{StaticResource NumberKeyStyle}"
+                                Style="{DynamicResource NumberKeyStyle}"
                                 Command="{Binding InputCommand}" CommandParameter="."/>
                         <Button Grid.Row="3" Grid.Column="2" Content="&#x00D7;10&#x02E3;"
                                 vm:ButtonExtensions.SecondaryLabel="&#x03C0;" vm:ButtonExtensions.AlphaLabel="e"
-                                Style="{StaticResource NumberKeyStyle}"
+                                Style="{DynamicResource NumberKeyStyle}"
                                 Command="{Binding InputCommand}" CommandParameter="×10^"/>
                         <Button Grid.Row="3" Grid.Column="3" Content="Ans"
                                 vm:ButtonExtensions.SecondaryLabel="DRG&#x25B6;" vm:ButtonExtensions.AlphaLabel="PreAns"
-                                Style="{StaticResource NumberKeyStyle}"
-                                Command="{Binding InputCommand}" CommandParameter="Ans"/>
+                                Style="{DynamicResource NumberKeyStyle}"
+                                Command="{Binding InputCommand}" CommandParameter="Ans"
+                                ToolTip="Ans: Answer memory or DRG▶ (Angle unit conversion) / PreAns"/>
                         <Button Grid.Row="3" Grid.Column="4" Content="="
-                                Style="{StaticResource OperatorKeyStyle}"
-                                Command="{Binding InputCommand}" CommandParameter="="/>
+                                Style="{DynamicResource OperatorKeyStyle}"
+                                Command="{Binding InputCommand}" CommandParameter="="
+                                ToolTip="=: Evaluate expression or SOLVE"/>
                     </Grid>
                 </Grid>
 

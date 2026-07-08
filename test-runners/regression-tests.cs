@@ -44,6 +44,22 @@ Console.WriteLine("\n=== Phase 1: Fraction Value ===");
 T("0.75→3/4", FractionValue.FromDouble(0.75).ToString(), "3/4");
 T("0.5→1/2", FractionValue.FromDouble(0.5).ToString(), "1/2");
 Td("3/4→0.75", FractionValue.FromDouble(0.75).ToDouble(), 0.75);
+{
+    var f1 = FractionValue.FromDouble(1.25);
+    T("1.25 whole part", f1.WholePart.ToString(), "1");
+    T("1.25 numerator", f1.Numerator.ToString(), "1");
+    T("1.25 denominator", f1.Denominator.ToString(), "4");
+    T("1.25 improper numerator", (f1.WholePart * f1.Denominator + f1.Numerator).ToString(), "5");
+}
+{
+    var f2 = FractionValue.FromDouble(-1.25);
+    T("-1.25 IsNegative", f2.IsNegative.ToString(), "True");
+    T("-1.25 whole part", f2.WholePart.ToString(), "1");
+    T("-1.25 numerator", f2.Numerator.ToString(), "1");
+    T("-1.25 denominator", f2.Denominator.ToString(), "4");
+    T("-1.25 improper numerator", (f2.WholePart * f2.Denominator + f2.Numerator).ToString(), "5");
+}
+
 
 Console.WriteLine("\n=== Phase 1: Angle Service ===");
 var angle = new AngleService();
