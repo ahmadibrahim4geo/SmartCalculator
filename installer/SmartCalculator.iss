@@ -1,10 +1,10 @@
-; SmartCalculator v1.0.0 — Inno Setup Installer Script
+; SmartCalculator v3.0.0 — Inno Setup Installer Script
 ; Build with: ISCC.exe SmartCalculator.iss
 
 #define MyAppName "SmartCalculator"
-#define MyAppVersion "2.0.0"
+#define MyAppVersion "3.0.0"
 #define MyAppPublisher "Ahmad Ibrahim"
-#define MyAppURL "https://github.com/ahmadibrahim/SmartCalculator"
+#define MyAppURL "https://github.com/ahmadibrahim4geo/SmartCalculator"
 #define MyAppExeName "SmartCalculator.exe"
 
 [Setup]
@@ -19,16 +19,21 @@ DefaultDirName={autopf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 UninstallDisplayIcon={app}\{#MyAppExeName}
 UninstallDisplayName={#MyAppName} {#MyAppVersion}
-OutputDir=..\release\v2.0.0
-OutputBaseFilename=SmartCalculator_Setup_v2.0.0
+OutputDir=..\release\v3.0.0
+OutputBaseFilename=SmartCalculator_Setup_v3.0.0
 SetupIconFile=..\Assets\AppIcon.ico
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
 PrivilegesRequired=admin
+ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 ChangesAssociations=no
 LicenseFile=..\LICENSE
+VersionInfoVersion=3.0.0.0
+VersionInfoProductVersion=3.0.0
+CloseApplications=yes
+RestartApplications=no
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -51,20 +56,3 @@ Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; WorkingDi
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#MyAppName}}"; Flags: nowait postinstall skipifsilent
-
-[UninstallRun]
-Filename: "{cmd}"; Parameters: "/C taskkill /F /IM SmartCalculator.exe 2>nul"; Flags: runhidden
-
-[Code]
-function IsDotNet8Installed: Boolean;
-begin
-  Result := RegKeyExists(HKLM, 'SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full');
-end;
-
-procedure CurPageChanged(CurPageID: Integer);
-begin
-  if CurPageID = wpSelectTasks then
-  begin
-    // No additional setup needed
-  end;
-end;

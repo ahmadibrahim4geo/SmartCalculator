@@ -152,7 +152,7 @@ public class CalculatorEngine
                 tokens.Add(new CalcToken { Type = TokenType.Operator, OperatorType = op }); i++; expectUnary = true; continue;
             }
 
-            i++;
+            throw new CalculatorException("Syntax Error");
         nextChar:;
         }
         return tokens;
@@ -272,7 +272,7 @@ public class CalculatorEngine
                         CalcFunction.Power10 => Math.Pow(10, arg),
                         CalcFunction.Abs => Math.Abs(arg),
                         CalcFunction.Sqrt => arg < 0 ? throw new CalculatorException("Math Error") : Math.Sqrt(arg),
-                        CalcFunction.CubeRoot => Math.Pow(arg, 1.0 / 3.0),
+                        CalcFunction.CubeRoot => Math.Cbrt(arg),
                         _ => throw new CalculatorException("Math Error")
                     };
 

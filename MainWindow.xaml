@@ -3,9 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:SmartCalculator.ViewModels"
         Title="SmartCalculator"
-        Icon="Assets/AppIcon.ico"
         Width="444"
-        Height="830"
+        Height="854"
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
@@ -21,32 +20,163 @@
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
         <vm:BooleanToOpacityConverter x:Key="BoolToOpacity"/>
-        
-        <Style x:Key="HelpButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Foreground" Value="#A0AEC0"/>
-            <Setter Property="FontSize" Value="9"/>
+
+        <!-- The LCD and function labels stay classic and readable in every theme/skin. -->
+        <SolidColorBrush x:Key="LCDTextBrush" Color="#172017"/>
+        <SolidColorBrush x:Key="ShiftLabelBrush" Color="#FFE36A"/>
+        <SolidColorBrush x:Key="AlphaLabelBrush" Color="#FF6F86"/>
+        <LinearGradientBrush x:Key="LCDBackground" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#D8E5D3" Offset="0"/>
+            <GradientStop Color="#CDDBC9" Offset="0.46"/>
+            <GradientStop Color="#BDCDBA" Offset="1"/>
+        </LinearGradientBrush>
+        <Style x:Key="LcdStatusText" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource LCDTextBrush}"/>
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="FontWeight" Value="ExtraBold"/>
+            <Setter Property="FontFamily" Value="Consolas"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+
+                <!-- Developer Calligraphy Vector Signature ("أحمد إبراهيم") -->
+        <CombinedGeometry x:Key="DeveloperLogoGeometry" GeometryCombineMode="Exclude"
+                          Geometry1="F1 M297.07,278.32c-3.63,18.33-15.29,30.43-29.94,40.27a116.8,116.8,0,0,1-19,9.9c-6.07,2.62-11.47,6.14-15.4,11.66a43.35,43.35,0,0,0-7.55,20.31c-1.92,16,1.58,31.21,7.92,45.82,1.73,4,4,7.71,6,11.56.22.43.45.86.87,1.64-1.09-1-1.93-1.7-2.63-2.5-13.61-15.69-23.33-33.38-27.3-53.94-3.08-16-2.72-32,0-48.06,4-24.11,14.21-45.51,28.37-65.19a243.33,243.33,0,0,1,32-36.53,32.49,32.49,0,0,1,4.54-3.62l-1.13,1.5A253.4,253.4,0,0,0,240,270.79c-2.76,7-5.1,14.24-6,21.81a22.18,22.18,0,0,0,.75,9.68c1.59,4.77,5.13,6.94,10,5.77a40,40,0,0,0,7.83-2.89,108.81,108.81,0,0,0,29.69-20.42,34.46,34.46,0,0,0,9.74-16.17c.67-2.69.54-5.59.6-8.4q-.5,4.75-1,9.52l-.49.07c-.21-.41-.45-.81-.64-1.23-6.68-14.63-10.15-29.87-8.71-46a72,72,0,0,1,10-30.1c5.87-10,13.05-19.17,20-28.47C321,151.57,330,139,337.27,125.35c7.47-14.09,13.09-28.82,15.53-44.65a107.16,107.16,0,0,0,1.05-23.4.88.88,0,0,1,.33-.79c1,3.71,2.2,7.38,3.1,11.11a133.81,133.81,0,0,1,.59,59.3,119.59,119.59,0,0,1-29.35,57.52c-6.33,6.91-13.09,13.44-19.41,20.35a113.06,113.06,0,0,0-10.49,13.05c-5.26,7.85-6.5,16.64-4.67,25.9,1.89,9.53,5.05,18.6,10.48,26.7a38.8,38.8,0,0,0,6.63,7.55c5.89,5.1,12.36,5,18.28,0a64,64,0,0,0,5.54-5.85,2.29,2.29,0,0,0,.51-1.25c1.1-10.56,6.48-18.73,14.32-25.48,8.71-7.49,18.86-12.28,29.84-15.42.69-.2,1.4-.37,2.1-.56l1-.26c-2.51-1.14-4.72-2.18-7-3.17-5.64-2.5-11.29-5-17.47-5.81a24.91,24.91,0,0,0-7.11,0,12.52,12.52,0,0,0-10.19,8.74c-.22.63-.43,1.26-.67,2-.94-2.28-1.11-5.18-.27-9.58,1.27-6.69,4.35-12.2,10.82-15.17,4.95-2.28,10.08-1.92,15.22-.63,6,1.51,11.43,4.27,16.93,6.92,3.82,1.85,7.64,3.71,11.49,5.5,8,3.71,16.24,6.5,25.43,6.47-.22.65-.35,1.17-.57,1.67-2.32,5.19-4.67,10.38-7,15.58a1.71,1.71,0,0,1-1.82,1.06,105.1,105.1,0,0,0-42.8,10c-3.13,1.45-6.14,3.17-9.21,4.76l.1.38c1,.08,2.1.09,3.13.25,10.69,1.64,17.76,10.42,17.22,21.43a29.86,29.86,0,0,1-3.65,13.2c-3.88,7-10.33,9.92-18.08,8-8.65-2.19-15-7.46-19.46-15.09-.26-.45-.51-.9-.77-1.34-.05-.08-.17-.1.07,0-2.33,3.2-4.36,6.6-7,9.44-5.17,5.57-11.64,6.24-18.17,2.32-4.87-2.92-8.38-7.18-11.38-11.9C299.31,282.27,298.27,280.36,297.07,278.32Zm-52.55-28.9-.21-.11a2.87,2.87,0,0,0-.31.29c-8.06,11.71-14.72,24.12-18.79,37.81-1.87,6.3-3,12.68-2.25,19.3.79,7,4.54,11.55,10.86,12.31a31.53,31.53,0,0,0,9.09-.39c6.33-1.15,12.07-4,17.61-7.15,10.6-6.07,19.92-13.6,27-23.67.37-.53.71-1.09,1.06-1.63-3.46,3.85-6.77,7.79-10.53,11.23-7.71,7-16.19,12.92-26.21,16.25a31.24,31.24,0,0,1-10.67,1.81c-9-.23-14.69-5.65-15.37-14.63-.58-7.57,1.4-14.69,3.89-21.69a151,151,0,0,1,14-28.34C244,250.35,244.26,249.89,244.52,249.42Zm100.23,23.21c3.46,7.76,13.43,13.95,22,13.61a29.65,29.65,0,0,0,4.31-.8C368.35,274,353.24,266.78,344.75,272.63Zm7.43-154.48-.34-.08c-.08.19-.16.37-.23.56-6.25,18.14-16.14,34.21-28,49.12-6.33,7.93-12.84,15.73-19.11,23.71C297.7,200.07,292,209.3,289.11,220c-.35,1.29-.65,2.61-.92,3.92s-.52,2.65-.71,4-.26,2.53-.38,3.8a74.66,74.66,0,0,1,4.07-15.43c3.6-9.24,9.16-17.25,15.36-24.88,7.45-9.16,15.11-18.16,22.35-27.48A134.77,134.77,0,0,0,349.33,127C350.38,124.06,351.24,121.09,352.18,118.15ZM336.8,270.57c17.37-23,41.35-33.88,69-38.14C376.51,233.72,353.45,246.31,336.8,270.57ZM234,334.22c-12.46,5.63-18.58,17.07-17.82,29.33C217.25,350.46,223.24,340.86,234,334.22Zm140.24-50.8c1-.88,1.33-4.16.48-5.75C374.6,279.39,374.42,281.48,374.26,283.42Z M428.81,352.74l.38,1.83a26.39,26.39,0,0,0,7.55,14.33,16.45,16.45,0,0,0,19.49,3c1-.5,1.35-1,.89-2-1.3-2.82-2.55-5.65-3.93-8.42a19.11,19.11,0,0,0-2.53-3.91c-1.74-2-1.79-3.9-.72-6.31,2-4.52,3.73-9.19,5.69-14.12,4.35,8,9.53,15.26,10,24.42a31.34,31.34,0,0,1-6.86,21.88,17.06,17.06,0,0,1-23.58,3.5c-.81,2.75-1.47,5.56-2.45,8.27-3.74,10.35-9.87,19.25-17.37,27.17-20.83,22-46.47,35.08-76.3,40-4.33.72-8.73,1-13.17,1.65,2.05.42,4.09.88,6.15,1.26a124.42,124.42,0,0,0,61.07-4.16c20-6.38,38.44-15.86,54.62-29.42a.7.7,0,0,1,.72-.12c-.84,1.12-1.66,2.26-2.53,3.36a113.74,113.74,0,0,1-50.46,36.24,128.74,128.74,0,0,1-100.92-5.91c-14.36-7.33-27.11-16.8-37.23-29.49-9-11.34-14.72-24.15-15.55-38.73-.73-12.68,2.38-24.27,11.5-33.66a20.58,20.58,0,0,1,8.85-5.46c-.53,4.36-.56,8.55.91,12.61-.09-.49-.18-1-.26-1.47s-.18-1-.24-1.54c-1.7-14,4.74-25.92,15.41-32a16.59,16.59,0,0,1,3.42-1.43c1.74-.51,2.62-.1,3.41,1.53,1.17,2.43,2.24,4.9,3.39,7.33,2.53,5.3,5.33,10.44,9.34,14.79,3.28,3.57,7.09,6.23,12.19,6.3a14.15,14.15,0,0,0,13.08-9.32c.66-1.74,1.15-3.55,1.89-5.26a7.83,7.83,0,0,1,6-5c-2.37,6.65-1.61,12.73,3.52,17.78,3.38,3.32,7.63,4.34,12.25,4-5.2-12.77-.92-23.09,7.82-32.47a1,1,0,0,0-.26-.33c-2.24-1.79-2.21-3.9-1.32-6.44,1.44-4.16,2.56-8.42,3.82-12.63.15-.48.35-.94.54-1.46,2.42,2.18,4.71,4.35,7.12,6.39,6.05,5.11,12.31,10,18.2,15.28,5.64,5.05,9.94,11.13,11.75,18.65a28.09,28.09,0,0,1-1.83,19.4c-3.56,7.32-10.27,10.66-18.81,9.52A39.25,39.25,0,0,1,359,377.31a2.13,2.13,0,0,0-2.63.12,26.09,26.09,0,0,1-10.71,4.32c-10.81,1.7-18.74-5.24-20.72-14.92-.05-.24-.09-.48-.21-1.18-.45,1.13-.73,1.86-1,2.59a24.89,24.89,0,0,1-5.3,8.34c-6.65,6.79-16.05,6.85-22.77.08-1.34-1.36-2.49-2.9-3.84-4.49-.72,6.44-3.43,12.12-6.36,17.71-8.05-.7-16.59-7.3-21.73-16.75-4.77.27-8.71,3.55-10.27,8.77-1.78,6-1,11.91.79,17.74,4.47,14.47,14.08,24.62,27.14,31.74,12,6.54,25,9.11,38.57,9.38,20.37.4,39.46-4.72,57.66-13.55a154.4,154.4,0,0,0,41.24-28.75c2.62-2.57,5-5.4,7.4-8.18a3.36,3.36,0,0,0,.67-2,22.64,22.64,0,0,0-4.6-13.91,5.42,5.42,0,0,1-.59-6.09c2-4.27,3.74-8.64,5.62-13C427.71,354.57,428.2,353.84,428.81,352.74Zm-10.73,56a2.09,2.09,0,0,0-.48.16c-.23.21-.45.43-.66.65a146.84,146.84,0,0,1-46.51,32.34c-17.56,7.83-35.84,12.18-55.23,10.69-15.14-1.16-29.31-5.28-41.89-14.05a61.47,61.47,0,0,1-24.15-32.2c-3.13-9.7-3.09-19.3,1.31-28.59,1.43-3,3.57-5.7,5.2-8.25.27-.13.13-.09,0,0-.39.34-.78.68-1.14,1.06a26.32,26.32,0,0,0-6.14,10.32c-3.65,11.92-1.92,23.41,3.38,34.39,7.06,14.64,18.37,25.08,33.13,31.61,19.5,8.64,39.84,10.17,60.51,5.45,28.43-6.49,52.2-21.07,71.84-42.52C417.53,409.53,417.73,409.2,418.08,408.74ZM367.86,366.2c2.23.68,4.33,1.45,6.49,1.95,4.36,1,8.7,1.22,12.9-.82,1.08-.53,1.53-1.19,1-2.3a37.65,37.65,0,0,0-2.71-5.2c-3.41-4.74-7.8-8.47-12.63-12.12a26.79,26.79,0,0,1-2.57,12.62c-1.84,3.71-4.11,7.21-6.34,11.07Zm-.22-14.06a13.32,13.32,0,0,0-5.53-9.82,3.38,3.38,0,0,0-3.62-.5,13.71,13.71,0,0,0-7.44,6.9,3.94,3.94,0,0,0-.31,2.22c.8,4.76,3.78,7.93,7.78,10.26A1.8,1.8,0,0,0,360,361a23.57,23.57,0,0,0,7.08-7.29A5.84,5.84,0,0,0,367.64,352.14Zm-88.53-3.38c-2.77,2.05-5.51,3.68-7.74,5.84-2.79,2.69-2.88,2.89-.92,6.43,3.64,6.59,10,9.5,17,11.71a22.18,22.18,0,0,0-1.09-5.89C284.14,361,281.71,355.17,279.11,348.76Zm107.64,1.4c-6.67-10-17.08-15.83-25.93-23.45,6.26,5.47,11.57,11.48,12.15,20.34.24-4.47-1.38-8.35-3.62-12.07C375.55,339.65,381.82,344.15,386.75,350.16ZM268.5,354.92c-.15-5.61,3-9.69,6.49-13.58C270.61,344.81,268.16,349.2,268.5,354.92Zm20.31,26.47c-1.25-.23-2.46-.37-3.62-.69s-2.37-.84-3.55-1.27C283.94,380.5,286.05,382.42,288.81,381.39Zm143.06-4.89-.24,0c-.34,2.35-.67,4.71-1,7.06l.35,0C431.28,381.25,431.57,378.87,431.87,376.5Z M399.56,148.53c-.35,12.7,6.52,21.77,13.82,30.53,9.08,10.9,18.55,21.49,27.62,32.41,9.21,11.09,17.61,22.77,24.26,35.63,4.87,9.43,8,19.32,8.07,30a53.41,53.41,0,0,1-9.57,31.28,73.67,73.67,0,0,1-32.61,26.45,7.87,7.87,0,0,1-2.34.64c2.53-2.13,5.11-4.2,7.57-6.41,9-8.11,16.06-17.53,19.6-29.32,3-10.14,2.12-20-1.49-29.85-3.83-10.39-9.49-19.76-15.85-28.74-8.85-12.49-18.87-24-28.82-35.64-5.06-5.9-9.93-12-13.38-19-6.05-12.35-5.39-24.39,1.81-36.09C398.58,149.88,399,149.36,399.56,148.53Zm.63,29.06c.12-.32,0-.2.06-.14a13.8,13.8,0,0,0,1.06,2.06c3.79,5.23,7.38,10.63,11.47,15.62,9,10.93,18.35,21.52,27.25,32.49,7.72,9.52,14.32,19.79,18.83,31.28,3.49,8.89,5.47,18,4.49,27.63-.27,2.55-.77,5.08-1.24,8.09.3-.74.47-1,.55-1.35a54.77,54.77,0,0,0,1.46-20.48c-1.21-9.39-4.72-18-9.19-26.2-6.64-12.22-15.29-23-24.41-33.43-6.2-7.09-12.71-13.92-18.86-21.06C407.59,187.38,403.91,182.32,400.19,177.59Z M457,423.65c.91-1.23,1.84-2.46,2.74-3.7,8.68-12.1,13.51-25.67,15.39-40.35,2.64-20.62,0-40.82-5.47-60.7a6.55,6.55,0,0,1,1.54-7,64,64,0,0,0,11.94-21.11c.85,3.09,1.6,5.91,2.38,8.72,4.48,16.23,7.65,32.66,7.53,49.59-.12,16.73-3.83,32.54-12,47.2a86.65,86.65,0,0,1-21.58,25.84c-.57.45-1.15.88-1.73,1.32-.17.12-.34.22-.52.33Zm23.31-117.16c-.58,1.47-1.18,2.95-1.75,4.43a1.52,1.52,0,0,0,0,.73c.37,2,.71,4,1.13,5.94A181,181,0,0,1,484,348c.73,16.74-1.75,32.89-8.79,48.22-.15.34-.23.71-.35,1.06a2.17,2.17,0,0,0,.68-.88,102.82,102.82,0,0,0,8.9-30.72c2-14.4.92-28.69-1.75-42.93C481.72,317.36,479.1,312.19,480.33,306.49Z M404.56,301.51c1.3,7.63,2.8,15.24,3.87,22.92,1.76,12.56,3.39,25.15,3.3,37.88-.07,10.06-2,19.66-7.11,28.44a29.12,29.12,0,0,1-7.49,8.75c.26-.67.5-1.34.77-2,4.05-9.85,4.91-20.18,4.38-30.66-1.14-22.67-3.91-45.18-7.18-67.63a3.4,3.4,0,0,1,.16-1.94c3.1-5.73,6.27-11.43,9.59-17.46l12.89,37.79-.27.11c-3.57-3-7.16-5.93-10.71-8.94a2.74,2.74,0,0,1-.63-1.34c-.53-2-1-4-1.5-5.95Z M327.9,415.29l-12.7-10.53c-2.83,3.56-5.56,7-8.38,10.53L293.21,404l9.27-12.49,13.38,10.57,8.05-10.57,13.81,11.36Z M373.34,162.42c-2-6.24.49-10.93,5.48-14.86-1-.25-1.76-.43-2.53-.66-4.07-1.18-6-3.93-5.23-8.05a24.8,24.8,0,0,1,11.32-16.91,10.06,10.06,0,0,1,4.2-1.4,4.48,4.48,0,0,1,4.94,4c.62,3.29-.26,6.24-2.1,9.23l-.66-1.45c-1.27-2.8-3.75-4-6.61-2.91a14,14,0,0,0-3.88,2.46c-1.65,1.39-1.65,2.66-.16,4.23,2,2.11,4.65,2.83,7.43,3.11,4.44.46,8.34-1.19,12.08-3.3,1.65-.94,3.22-2,4.83-3l.39.21c-1.36,3.09-2.68,6.2-4.14,9.25-.24.53-1,.82-1.6,1.17-4.91,3-9.89,5.84-14.73,8.93C378.5,154.88,375,157.77,373.34,162.42Z M382.08,172.71c-1.18,2.12-2.29,4.28-3.58,6.34a4.82,4.82,0,0,1-1.94,1.44q-22.37,11.35-44.73,22.66c-2.4,1.22-4.72,2.58-7.08,3.88a2.47,2.47,0,0,1-1.44.35c1.47-2.53,2.9-5.07,4.43-7.56a3.34,3.34,0,0,1,1.39-.93q23.78-12,47.56-23.94l5.09-2.55Z M444.11,400.92l13.68,10.89-9.06,12.45-13.48-10.67Z M434.84,299.07c.6-4.18,1.05-8.18,1.8-12.11a23.47,23.47,0,0,1,2.05-5.65c.83-1.69,2.27-3,4.31-2.8s3.14,1.87,3.74,3.71a9.07,9.07,0,0,1-1.13,8c-.58-1.09-1-2.07-1.57-2.94-1.31-2-3.13-1.93-4,.27a52,52,0,0,0-2.18,7.89c-.67,3.25-1,6.55-1.64,9.8a46.89,46.89,0,0,1-1.41,4.78c-1.11-3.35-2-6.41-3.15-9.33a30.54,30.54,0,0,0-3.08-5.17,3,3,0,0,0-3-1.25c-3.34.3-5.08-1.41-4.84-4.78a10.85,10.85,0,0,1,.88-3.43c.9-2.1,2.6-2.76,4.54-1.52a10.92,10.92,0,0,1,3.76,3.57c1.72,3.11,3,6.45,4.44,9.7C434.57,298.15,434.66,298.53,434.84,299.07Z M319.4,245.92c.94-4.47,1.71-8.91,2.85-13.25a16.07,16.07,0,0,1,2.71-5.5c1.79-2.34,4.42-2,6.07.4a8.35,8.35,0,0,1-.42,9.25c-.41-.75-.75-1.49-1.19-2.17-1.5-2.31-3.24-2.28-4.35.2a33.78,33.78,0,0,0-1.95,5.88c-.93,3.87-1.65,7.8-2.53,11.68a13.42,13.42,0,0,1-1.67,4c-.26-1.22-.49-2.45-.8-3.66a29.82,29.82,0,0,0-4.31-10.07c-1-1.38-2-2.5-4.09-2s-3.74-.79-4.14-3a8.44,8.44,0,0,1,1.38-6.21,2.56,2.56,0,0,1,3.57-.89,11.89,11.89,0,0,1,3.43,2.8c2.7,3.32,4,7.33,5.12,11.38C319.18,245.22,319.29,245.56,319.4,245.92Z M341,423.6c1.61-2.74,3.21-5.49,4.84-8.21a2.09,2.09,0,0,1,.88-.6q20.52-10,41-19.92a9.35,9.35,0,0,1,.94-.28c-2,3.5-2.89,7-6.85,8.87-11.67,5.46-23.15,11.32-34.68,17.06-2,1-3.93,2.19-5.89,3.3Z M304.56,334.12c4.36-4.83,10.11-7.58,15.63-11.26-5.16-1.12-9.94-2-14.95.89,1.41-3.59,2.58-6.86,5.24-9.19a7.29,7.29,0,0,1,3.81-1.51,28.18,28.18,0,0,1,13,1.53c1.86.67,1.88.89,1.18,2.69-3.09,7.87-8.89,12.62-16.95,14.81C309.18,332.71,306.88,333.44,304.56,334.12Z M266.24,248.71c-.9,2.12-1.91,4.2-2.7,6.36-1.71,4.7-3.47,9.4-4.86,14.2a11.28,11.28,0,0,0,.13,5.5c.74,3.08,3.73,3.89,5.94,1.62a39.52,39.52,0,0,0,3.64-5.14,15.4,15.4,0,0,1-.32,2.91,62,62,0,0,1-2.73,7.68,8.31,8.31,0,0,1-3,3.08c-2.85,1.93-6.15.95-7.75-2.1-1.49-2.85-1.43-5.91-1-9,1.06-7.66,4.37-14.4,8.74-20.67,1.12-1.6,2.37-3.11,3.57-4.66Z M395.71,258.6c2-6.76,6.9-7.82,13.11-6.08a1.4,1.4,0,0,1,.84,2.25,59.29,59.29,0,0,1-4.45,5.88c-1.37,1.54-3.11,2.75-4.51,4.26-.56.6-1.14,1.89-.86,2.4a3.57,3.57,0,0,0,2.44,1.49c4.41.49,8.32-1.23,12.16-3.11a6,6,0,0,1,2-.76c-.56.73-1.09,1.49-1.69,2.19a19.92,19.92,0,0,1-13.57,7.05c-1.91.2-4,.19-5.2-1.66s-.55-3.82.5-5.42a57.76,57.76,0,0,1,4.82-6c1-1.15,2.22-2.12,3.46-3.29C401.47,256.4,398.6,257.23,395.71,258.6Z M243.51,339c-1.1,2.83-2.32,5.61-3.24,8.5a47.75,47.75,0,0,0-1.4,6.64,4.73,4.73,0,0,0,.29,2.12c.74,2.29,2.59,2.74,4.24,1,.88-.93,1.61-2,2.4-3,.34,3.17-2.25,8.05-5.08,9.49-2.41,1.23-5.07.42-5.79-2.15a14.49,14.49,0,0,1-.4-6.07,30.85,30.85,0,0,1,8-16c.24-.26.54-.48.8-.72Z M437.58,256.75c-1,3.19-2,6.22-2.94,9.28a15.4,15.4,0,0,0-.63,3.5c-.14,2.47.59,3.49,3.05,4.38-1.29,3.42-2.59,6.83-3.94,10.4-2.79-2.46-4.4-5.36-4.14-9,.48-7,3.6-13,8-18.28C437.12,256.94,437.28,256.91,437.58,256.75Z"
+                          Geometry2="F1 M244.52,249.42c-.26.47-.52.93-.8,1.39a151,151,0,0,0-14,28.34c-2.49,7-4.47,14.12-3.89,21.69.68,9,6.39,14.4,15.37,14.63a31.24,31.24,0,0,0,10.67-1.81c10-3.33,18.5-9.23,26.21-16.25,3.76-3.44,7.07-7.38,10.53-11.23-.35.54-.69,1.1-1.06,1.63-7.09,10.07-16.41,17.6-27,23.67-5.54,3.18-11.28,6-17.61,7.15a31.53,31.53,0,0,1-9.09.39c-6.32-.76-10.07-5.32-10.86-12.31-.74-6.62.38-13,2.25-19.3,4.07-13.69,10.73-26.1,18.79-37.81a2.87,2.87,0,0,1,.31-.29Z M344.75,272.63c8.49-5.85,23.6,1.41,26.29,12.81a29.65,29.65,0,0,1-4.31.8C358.18,286.58,348.21,280.39,344.75,272.63Z M352.18,118.15c-.94,2.94-1.8,5.91-2.85,8.81a134.77,134.77,0,0,1-20.45,36.94c-7.24,9.32-14.9,18.32-22.35,27.48-6.2,7.63-11.76,15.64-15.36,24.88a74.66,74.66,0,0,0-4.07,15.43c.12-1.27.21-2.54.38-3.8s.44-2.66.71-4,.57-2.63.92-3.92c2.93-10.69,8.59-19.92,15.35-28.53,6.27-8,12.78-15.78,19.11-23.71,11.9-14.91,21.79-31,28-49.12.07-.19.15-.37.23-.56Z M336.8,270.57c16.65-24.26,39.71-36.85,69-38.14C378.15,236.69,354.17,247.59,336.8,270.57Z M234,334.22c-10.78,6.64-16.77,16.24-17.82,29.33C215.44,351.29,221.56,339.85,234,334.22Z M374.26,283.42c.16-1.94.34-4,.48-5.75C375.59,279.26,375.3,282.54,374.26,283.42Z M418.08,408.74c-.35.46-.55.79-.8,1.06-19.64,21.45-43.41,36-71.84,42.52-20.67,4.72-41,3.19-60.51-5.45-14.76-6.53-26.07-17-33.13-31.61-5.3-11-7-22.47-3.38-34.39a26.32,26.32,0,0,1,6.14-10.32c.36-.38.75-.72,1.14-1.06.1-.09.24-.13,0,0-1.63,2.55-3.77,5.23-5.2,8.25-4.4,9.29-4.44,18.89-1.31,28.59a61.47,61.47,0,0,0,24.15,32.2c12.58,8.77,26.75,12.89,41.89,14.05,19.39,1.49,37.67-2.86,55.23-10.69a146.84,146.84,0,0,0,46.51-32.34c.21-.22.43-.44.66-.65A2.09,2.09,0,0,1,418.08,408.74Z M367.86,366.2,364,371.4c2.23-3.86,4.5-7.36,6.34-11.07a26.79,26.79,0,0,0,2.57-12.62c4.83,3.65,9.22,7.38,12.63,12.12a37.65,37.65,0,0,1,2.71,5.2c.56,1.11.11,1.77-1,2.3-4.2,2-8.54,1.84-12.9.82C372.19,367.65,370.09,366.88,367.86,366.2Z M367.64,352.14a5.84,5.84,0,0,1-.54,1.59A23.57,23.57,0,0,1,360,361a1.8,1.8,0,0,1-1.5.18c-4-2.33-7-5.5-7.78-10.26a3.94,3.94,0,0,1,.31-2.22,13.71,13.71,0,0,1,7.44-6.9,3.38,3.38,0,0,1,3.62.5A13.32,13.32,0,0,1,367.64,352.14Z M279.11,348.76c2.6,6.41,5,12.22,7.27,18.09a22.18,22.18,0,0,1,1.09,5.89c-7-2.21-13.38-5.12-17-11.71-2-3.54-1.87-3.74.92-6.43C273.6,352.44,276.34,350.81,279.11,348.76Z M386.75,350.16c-4.93-6-11.2-10.51-17.4-15.18,2.24,3.72,3.86,7.6,3.62,12.07-.58-8.86-5.89-14.87-12.15-20.34C369.67,334.33,380.08,340.17,386.75,350.16Z M268.5,354.92c-.34-5.72,2.11-10.11,6.49-13.58C271.47,345.23,268.35,349.31,268.5,354.92Z M288.81,381.39c-2.76,1-4.87-.89-7.17-2,1.18.43,2.35.94,3.55,1.27S287.56,381.16,288.81,381.39Z M431.87,376.5c-.3,2.37-.59,4.75-.89,7.12l-.35,0c.33-2.35.66-4.71,1-7.06Z M400.19,177.59c3.72,4.73,7.4,9.79,11.47,14.51,6.15,7.14,12.66,14,18.86,21.06,9.12,10.42,17.77,21.21,24.41,33.43,4.47,8.22,8,16.81,9.19,26.2a54.77,54.77,0,0,1-1.46,20.48c-.08.32-.25.61-.55,1.35.47-3,1-5.54,1.24-8.09,1-9.6-1-18.74-4.49-27.63-4.51-11.49-11.11-21.76-18.83-31.28-8.9-11-18.29-21.56-27.25-32.49-4.09-5-7.68-10.39-11.47-15.62a13.8,13.8,0,0,1-1.06-2.06C400.22,177.39,400.31,177.27,400.19,177.59Z M480.33,306.49c-1.23,5.7,1.39,10.87,2.39,16.24,2.67,14.24,3.73,28.53,1.75,42.93a102.82,102.82,0,0,1-8.9,30.72,2.17,2.17,0,0,1-.68.88c.12-.35.2-.72.35-1.06,7-15.33,9.52-31.48,8.79-48.22a181,181,0,0,0-4.29-30.39c-.42-2-.76-4-1.13-5.94a1.52,1.52,0,0,1,0-.73C479.15,309.44,479.75,308,480.33,306.49Z"/>
+
+        <Style x:Key="HeaderIconButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="25"/>
+            <Setter Property="Height" Value="23"/>
+            <Setter Property="Background" Value="#1D2226"/>
+            <Setter Property="BorderBrush" Value="#424B52"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Foreground" Value="#E2E7EB"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontFamily" Value="Segoe UI Symbol, Segoe UI"/>
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="HorizontalAlignment" Value="Right"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <TextBlock Text="{TemplateBinding Content}"
-                                   TextDecorations="Underline"
-                                   Foreground="{TemplateBinding Foreground}"/>
+                        <Border x:Name="border" CornerRadius="5"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                            <Grid>
+                                <Border Height="6" VerticalAlignment="Top" Margin="2,1"
+                                        CornerRadius="3" Background="#14FFFFFF" IsHitTestVisible="False"/>
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                  RecognizesAccessKey="False"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#313A40"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#72808A"/>
+                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#141719"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Foreground" Value="#F1F3F5"/>
-                </Trigger>
-                <Trigger Property="IsPressed" Value="True">
-                    <Setter Property="Foreground" Value="#A0AEC0"/>
-                </Trigger>
-            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="HeaderPinButtonStyle" TargetType="Button" BasedOn="{StaticResource HeaderIconButtonStyle}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" CornerRadius="5"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                            <Grid>
+                                <Border Height="6" VerticalAlignment="Top" Margin="2,1"
+                                        CornerRadius="3" Background="#14FFFFFF" IsHitTestVisible="False"/>
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                  RecognizesAccessKey="False"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#25353D"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#4EA5C9"/>
+                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#141719"/>
+                            </Trigger>
+                            <Trigger Property="Tag" Value="Pinned">
+                                <Setter TargetName="border" Property="Background" Value="#1A4754"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#38D0F2"/>
+                                <Setter Property="Foreground" Value="#38D0F2"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="HeaderCompactButtonStyle" TargetType="Button" BasedOn="{StaticResource HeaderIconButtonStyle}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" CornerRadius="5"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                            <Grid>
+                                <Border Height="6" VerticalAlignment="Top" Margin="2,1"
+                                        CornerRadius="3" Background="#14FFFFFF" IsHitTestVisible="False"/>
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                  RecognizesAccessKey="False"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#233544"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#5FAFE8"/>
+                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#141719"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="HeaderCloseButtonStyle" TargetType="Button" BasedOn="{StaticResource HeaderIconButtonStyle}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" CornerRadius="5"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                            <Grid>
+                                <Border Height="6" VerticalAlignment="Top" Margin="2,1"
+                                        CornerRadius="3" Background="#14FFFFFF" IsHitTestVisible="False"/>
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                  RecognizesAccessKey="False"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#B22234"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#E63946"/>
+                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#7E1522"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
     </Window.Resources>
 
@@ -67,20 +197,20 @@
                 <Border CornerRadius="21" Margin="6" BorderBrush="#0DFFFFFF" BorderThickness="1" IsHitTestVisible="False"/>
 
                 <!-- Main content area -->
-                <Grid Margin="14,12,14,10">
+                <Grid x:Name="MainContentGrid" Margin="14,12,14,10">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="52"/>
-                    <RowDefinition Height="120"/>
-                    <RowDefinition Height="84"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="18"/>
+                    <RowDefinition x:Name="HeaderRow" Height="82"/>
+                    <RowDefinition x:Name="DisplayRow" Height="120"/>
+                    <RowDefinition x:Name="ControlsRow" Height="84"/>
+                    <RowDefinition x:Name="KeypadRow" Height="*"/>
+                    <RowDefinition x:Name="FooterRow" Height="18"/>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
 
-                <!-- ========== ROW 0: HEADER (draggable) ========== -->
-                <Grid Grid.Row="0" Margin="2,2,2,0" Background="Transparent"
+                <!-- ========== ROW 0: BALANCED HEADER (draggable) ========== -->
+                <Grid x:Name="FullHeader" Grid.Row="0" Margin="2,1,2,0" Background="Transparent"
                       MouseLeftButtonDown="HeaderDragArea_MouseLeftButtonDown">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -88,74 +218,82 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <!-- Brand -->
-                    <StackPanel Grid.Column="0" VerticalAlignment="Top" Margin="0,1,0,0">
-                        <TextBlock Text="SmartCalculator" Foreground="#F1F3F5" FontSize="20"
-                                   FontWeight="ExtraBold" LineHeight="22"/>
-                        <TextBlock Foreground="#AEB4BC" FontSize="8"
-                                   FontWeight="ExtraBold" LineHeight="9"
-                                   Margin="0,1,0,0">
+                    <!-- Left: Brand Title & Developer Subtitle -->
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,8,0">
+                        <TextBlock x:Name="BrandTitle" Text="SmartCalculator"
+                                   Foreground="#F3F5F7" FontSize="18" FontWeight="ExtraBold"
+                                   VerticalAlignment="Center"/>
+                        <TextBlock x:Name="BrandSubtitle" Foreground="#8C95A2" FontSize="9.5"
+                                   FontWeight="SemiBold" Margin="0,2,0,0" VerticalAlignment="Center">
                             <Run Text="Scientific Display" />
-                            <Run Text="|" Foreground="#6A7078"/>
+                            <Run Text="•" Foreground="#525B66"/>
                             <Run Text="by: Ahmad Ibrahim" />
                         </TextBlock>
                     </StackPanel>
 
-                    <!-- Solar panel -->
-                    <Border Grid.Column="1" Height="24" Width="110" Margin="0,2,0,0"
-                            Background="#0A0C0D" CornerRadius="4" BorderBrush="#1D2123" BorderThickness="1"
-                            HorizontalAlignment="Center">
-                        <Grid Margin="3,0,3,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition/>
-                                <ColumnDefinition/>
-                                <ColumnDefinition/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition/>
-                            </Grid.RowDefinitions>
-                            <Border Grid.Column="0" Margin="1,2" CornerRadius="1" Background="#111516" BorderBrush="#050606" BorderThickness="1"/>
-                            <Border Grid.Column="1" Margin="1,2" CornerRadius="1" Background="#111516" BorderBrush="#050606" BorderThickness="1"/>
-                            <Border Grid.Column="2" Margin="1,2" CornerRadius="1" Background="#111516" BorderBrush="#050606" BorderThickness="1"/>
-                            <Border Grid.Column="3" Margin="1,2" CornerRadius="1" Background="#111516" BorderBrush="#050606" BorderThickness="1"/>
-                        </Grid>
-                    </Border>
+                    <!-- Center: Developer Arabic Calligraphy Signature (Enlarged >300%, Transparent Background, Vector Cutout) -->
+                    <Button x:Name="DeveloperLogo" Grid.Column="1" Height="76"
+                            Command="{Binding InputCommand}" CommandParameter="ABOUT"
+                            Background="Transparent" BorderThickness="0" Padding="0"
+                            Cursor="Hand" HorizontalAlignment="Center" VerticalAlignment="Center"
+                            ToolTipService.HasDropShadow="False"
+                            ToolTip="أحمد إبراهيم — Ahmad Ibrahim (Developer Signature)">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Viewbox Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <Path x:Name="LogoPath" Data="{StaticResource DeveloperLogoGeometry}"
+                                          Fill="#E2E8F0" Opacity="0.92" Stretch="Uniform"/>
+                                </Viewbox>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="LogoPath" Property="Opacity" Value="1.0"/>
+                                        <Setter TargetName="LogoPath" Property="Fill" Value="#FFFFFF"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
 
-                    <!-- Top-right buttons: About + Pin + Close + Help underneath -->
-                    <Grid Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,1,0,0">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-                        <StackPanel Grid.Row="0" Orientation="Horizontal">
-                             <Button Content="&#x24D8;" Style="{DynamicResource PinButtonStyle}"
-                                     Command="{Binding InputCommand}" CommandParameter="ABOUT"
-                                     ToolTipService.HasDropShadow="False"
-                                     ToolTip="About: Show information"/>
-                             <Button x:Name="ThemeButton" Content="&#x1F3A8;" Style="{DynamicResource PinButtonStyle}"
-                                     PreviewMouseLeftButtonDown="ThemeButton_PreviewMouseLeftButtonDown"
-                                     PreviewMouseLeftButtonUp="ThemeButton_PreviewMouseLeftButtonUp"
-                                     Margin="4,0,0,0"
-                                     ToolTipService.HasDropShadow="False"
-                                     ToolTip="Theme: Click to cycle, hold down for selection menu"/>
-                             <Button x:Name="PinButton" Content="&#x1F4CC;" Style="{DynamicResource PinButtonStyle}"
-                                     Click="PinButton_Click" Margin="4,0,0,0"
-                                     ToolTipService.HasDropShadow="False"
-                                     ToolTip="Always on Top: Pin window on top of others"/>
-                             <Button Content="&#x2715;" Style="{DynamicResource CloseButtonStyle}"
-                                     Click="CloseButton_Click" Margin="6,0,0,0"
-                                     ToolTipService.HasDropShadow="False"
-                                     ToolTip="Close: Close calculator"/>
+                    <!-- Right: Window Management & Feature Tool Controls -->
+                    <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="8,0,0,0">
+                        <!-- Upper: Window Controls -->
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,4">
+                            <Button x:Name="PinButton" Content="⌖" Style="{StaticResource HeaderPinButtonStyle}"
+                                    Click="PinButton_Click" Margin="0,0,4,0"
+                                    ToolTipService.HasDropShadow="False"
+                                    ToolTip="Always on Top: Off (Click to toggle pin)"/>
+                            <Button x:Name="CompactButton" Content="⤡" Style="{StaticResource HeaderCompactButtonStyle}"
+                                    Click="CompactButton_Click" Margin="0,0,4,0"
+                                    ToolTipService.HasDropShadow="False"
+                                    ToolTip="Compact mode: Show essential calculator controls (Ctrl+M)"/>
+                            <Button x:Name="CloseButton" Content="✕" Style="{StaticResource HeaderCloseButtonStyle}"
+                                    Click="CloseButton_Click" Margin="0,0,0,0"
+                                    ToolTipService.HasDropShadow="False"
+                                    ToolTip="Close calculator"/>
                         </StackPanel>
-                        
-                        <Button Grid.Row="1" x:Name="HelpButton" Content="Help"
-                                Style="{StaticResource HelpButtonStyle}"
-                                Click="HelpButton_Click"
-                                Margin="0,3,2,0"
-                                ToolTipService.HasDropShadow="False"
-                                ToolTip="Help: Open user manual (CHM/HTML)"/>
-                    </Grid>
+
+                        <!-- Lower: Quick Feature Tools -->
+                        <StackPanel x:Name="HeaderToolButtons" Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button x:Name="ThemeButton" Content="🎨" Style="{StaticResource HeaderIconButtonStyle}"
+                                    PreviewMouseLeftButtonDown="ThemeButton_PreviewMouseLeftButtonDown"
+                                    PreviewMouseLeftButtonUp="ThemeButton_PreviewMouseLeftButtonUp"
+                                    Margin="0,0,4,0" ToolTipService.HasDropShadow="False"
+                                    ToolTip="Theme: Click to cycle color palette, hold for list"/>
+                            <Button x:Name="SkinButton" Content="🔲" Style="{StaticResource HeaderIconButtonStyle}"
+                                    PreviewMouseLeftButtonDown="SkinButton_PreviewMouseLeftButtonDown"
+                                    PreviewMouseLeftButtonUp="SkinButton_PreviewMouseLeftButtonUp"
+                                    Margin="0,0,4,0" ToolTipService.HasDropShadow="False"
+                                    ToolTip="Skin: Click to cycle button shapes, hold for list"/>
+                            <Button Content="ℹ" Style="{StaticResource HeaderIconButtonStyle}"
+                                    Command="{Binding InputCommand}" CommandParameter="ABOUT"
+                                    Margin="0,0,4,0" ToolTipService.HasDropShadow="False"
+                                    ToolTip="About: Application info &amp; features"/>
+                            <Button x:Name="HelpButton" Content="❓" Style="{StaticResource HeaderIconButtonStyle}"
+                                    Click="HelpButton_Click" Margin="0,0,0,0"
+                                    ToolTipService.HasDropShadow="False"
+                                    ToolTip="Help: Open user manual (F1)"/>
+                        </StackPanel>
+                    </StackPanel>
                 </Grid>
 
                 <!-- ========== ROW 1: LCD DISPLAY ========== -->
@@ -562,13 +700,49 @@
                                         </ListBox.ItemContainerStyle>
                                     </ListBox>
                                 </Grid>
+
+                                <!-- ========== SKINS MENU INSIDE LCD ========== -->
+                                <Grid Grid.Row="1" Grid.RowSpan="3"
+                                      Visibility="{Binding ShowSkinsMenu, Converter={StaticResource BoolToVis}}"
+                                      Panel.ZIndex="10" Margin="4,0,4,2"
+                                      Background="{DynamicResource LCDBackground}">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Grid.Row="0" Text="SELECT SKIN"
+                                               Foreground="{DynamicResource LCDTextBrush}"
+                                               FontSize="11" FontWeight="ExtraBold" FontFamily="Consolas"
+                                               Margin="2,2,0,1"/>
+                                    <ListBox Grid.Row="1"
+                                             ItemsSource="{Binding SkinDisplayItems}"
+                                             SelectedIndex="{Binding SkinsSelectedIndex}"
+                                             Background="Transparent" BorderThickness="0"
+                                             Foreground="{DynamicResource LCDTextBrush}"
+                                             FontFamily="Consolas" FontSize="10"
+                                             ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                             SelectionChanged="ListBox_SelectionChanged">
+                                        <ListBox.ItemContainerStyle>
+                                            <Style TargetType="ListBoxItem">
+                                                <Setter Property="Padding" Value="2,1"/>
+                                                <Style.Triggers>
+                                                    <Trigger Property="IsSelected" Value="True">
+                                                        <Setter Property="Background" Value="#3D5341"/>
+                                                        <Setter Property="Foreground" Value="#161B18"/>
+                                                    </Trigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </ListBox.ItemContainerStyle>
+                                    </ListBox>
+                                </Grid>
                             </Grid>
                         </Border>
                     </Border>
                 </Border>
 
                 <!-- ========== ROW 2: TOP CONTROLS (Ovals + DPad) ========== -->
-                <Grid Grid.Row="2" Margin="2,8,2,2">
+                <Grid x:Name="TopControls" Grid.Row="2" Margin="2,8,2,2">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
@@ -582,9 +756,9 @@
                                 <ColumnDefinition Width="55"/>
                                 <ColumnDefinition Width="55"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="SHIFT" Foreground="#FFD84D" FontSize="10"
+                            <TextBlock Grid.Column="0" Text="SHIFT" Foreground="{StaticResource ShiftLabelBrush}" FontSize="10"
                                        FontWeight="ExtraBold" HorizontalAlignment="Center" Margin="2,0,2,0" LineHeight="11"/>
-                            <TextBlock Grid.Column="1" Text="ALPHA" Foreground="#E34B57" FontSize="10"
+                            <TextBlock Grid.Column="1" Text="ALPHA" Foreground="{StaticResource AlphaLabelBrush}" FontSize="10"
                                        FontWeight="ExtraBold" HorizontalAlignment="Center" Margin="2,0,2,0" LineHeight="11"/>
                         </Grid>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
@@ -600,18 +774,17 @@
                     <!-- Center: DPad navigation - true oval shape matching HTML border-radius: 50% -->
                     <Grid Grid.Column="1" Width="122" Height="72"
                           HorizontalAlignment="Center" VerticalAlignment="Center">
-                        <Grid.Effect>
-                            <DropShadowEffect BlurRadius="4" ShadowDepth="2" Color="#000000" Opacity="0.22" Direction="270"/>
-                        </Grid.Effect>
-                        <Ellipse x:Name="DpadOuter" Stroke="#252B2D" StrokeThickness="2">
-                            <Ellipse.Fill>
-                                <RadialGradientBrush Center="0.5,0.5" RadiusX="0.5" RadiusY="0.5">
-                                    <GradientStop Color="#252B2D" Offset="0"/>
-                                    <GradientStop Color="#1D2224" Offset="0.21"/>
-                                    <GradientStop Color="#151819" Offset="0.43"/>
-                                </RadialGradientBrush>
-                            </Ellipse.Fill>
-                        </Ellipse>
+                        <Path x:Name="DpadOuter"
+                              Data="{DynamicResource SkinNavigatorGeometry}"
+                              Stretch="Fill"
+                              Fill="{DynamicResource NavyKeyGradient}"
+                              Stroke="{DynamicResource NavyBorderBrush}"
+                              StrokeThickness="{DynamicResource SkinKeyStrokeWidth}"
+                              Effect="{DynamicResource SkinKeyEffect}"/>
+                        <Path Data="{DynamicResource SkinNavigatorGeometry}"
+                              Stretch="Fill"
+                              Fill="{DynamicResource SkinNavigatorOverlayBrush}"
+                              Margin="2" IsHitTestVisible="False"/>
                         <Grid Margin="0,0,0,0">
                             <!-- NAV Button -->
                             <Button x:Name="DpadNav" Width="60" Height="42"
@@ -651,7 +824,7 @@
                             <StackPanel Grid.Column="0" HorizontalAlignment="Center" Margin="2,0,2,0">
                                 <TextBlock Text="MODE" Foreground="#F4F6F7" FontSize="10"
                                            FontWeight="ExtraBold" HorizontalAlignment="Center" LineHeight="12"/>
-                                <TextBlock Text="SETUP" Foreground="#E34B57" FontSize="8"
+                                <TextBlock Text="SETUP" Foreground="{StaticResource AlphaLabelBrush}" FontSize="8"
                                            FontWeight="ExtraBold" HorizontalAlignment="Center" LineHeight="9"/>
                             </StackPanel>
                             <TextBlock Grid.Column="1" Text="ON" Foreground="#F4F6F7" FontSize="10"
@@ -669,7 +842,7 @@
                 </Grid>
 
                 <!-- ===== ROW 3: KEYPAD AREA ===== -->
-                <Grid Grid.Row="3" Margin="2,6,2,0">
+                <Grid x:Name="FullKeypad" Grid.Row="3" Margin="2,6,2,0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="2*"/>
@@ -691,7 +864,7 @@
                                 Command="{Binding InputCommand}" CommandParameter="CALC"/>
                         <!-- ∫ icon with placeholder box -->
                         <Button Grid.Column="1"
-                                vm:ButtonExtensions.SecondaryLabel="d/dx" vm:ButtonExtensions.AlphaLabel="&#x2022;"
+                                vm:ButtonExtensions.SecondaryLabel="d/dx"
                                 Style="{DynamicResource ScienceKeyStyle}"
                                 Command="{Binding InputCommand}" CommandParameter="INTEGRAL">
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
@@ -707,7 +880,7 @@
                                 Command="{Binding InputCommand}" CommandParameter="INVERSE"/>
                         <!-- log with placeholder box -->
                         <Button Grid.Column="3"
-                                vm:ButtonExtensions.SecondaryLabel="&#x03A3;" vm:ButtonExtensions.AlphaLabel="&#x25A5;"
+                                vm:ButtonExtensions.SecondaryLabel="&#x03A3;"
                                 Style="{DynamicResource ScienceKeyStyle}"
                                 Command="{Binding InputCommand}" CommandParameter="LOGAB">
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
@@ -780,10 +953,10 @@
                                 Style="{DynamicResource ScienceKeyStyle}"
                                 Command="{Binding InputCommand}" CommandParameter="(-)"/>
                         <Button Grid.Row="1" Grid.Column="1" Content="dms"
-                                vm:ButtonExtensions.SecondaryLabel="FACT" vm:ButtonExtensions.AlphaLabel="B"
+                                vm:ButtonExtensions.SecondaryLabel="x!" vm:ButtonExtensions.AlphaLabel="B"
                                 Style="{DynamicResource ScienceKeyStyle}"
                                 Command="{Binding InputCommand}" CommandParameter="DMS"
-                                ToolTip="dms: Degrees/Minutes/Seconds or FACT (Factorization)"/>
+                                ToolTip="dms: Degrees/Minutes/Seconds or x! (factorial)"/>
                         <Button Grid.Row="1" Grid.Column="2" Content="hyp"
                                 vm:ButtonExtensions.SecondaryLabel="Abs" vm:ButtonExtensions.AlphaLabel="C"
                                 Style="{DynamicResource ScienceKeyStyle}"
@@ -939,12 +1112,82 @@
                         <Button Grid.Row="3" Grid.Column="4" Content="="
                                 Style="{DynamicResource OperatorKeyStyle}"
                                 Command="{Binding InputCommand}" CommandParameter="="
-                                ToolTip="=: Evaluate expression or SOLVE"/>
+                                ToolTip="=: Evaluate expression"/>
                     </Grid>
                 </Grid>
 
+                <!-- ===== COMPACT MODE: 4x6 uniform high-efficiency scientific/daily keypad ===== -->
+                <Grid x:Name="CompactKeypad" Grid.Row="3" Margin="2,8,2,0" Visibility="Collapsed">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/><ColumnDefinition/><ColumnDefinition/><ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Row 0: Quick functions -->
+                    <Button Grid.Row="0" Grid.Column="0" Content="(" Style="{DynamicResource ScienceKeyStyle}"
+                            Command="{Binding InputCommand}" CommandParameter="(" ToolTip="Open parenthesis"/>
+                    <Button Grid.Row="0" Grid.Column="1" Content=")" Style="{DynamicResource ScienceKeyStyle}"
+                            Command="{Binding InputCommand}" CommandParameter=")" ToolTip="Close parenthesis"/>
+                    <Button Grid.Row="0" Grid.Column="2" Content="&#x221A;" Style="{DynamicResource ScienceKeyStyle}"
+                            Command="{Binding InputCommand}" CommandParameter="√" ToolTip="Square root"/>
+                    <Button Grid.Row="0" Grid.Column="3" Content="%" Style="{DynamicResource ScienceKeyStyle}"
+                            Command="{Binding InputCommand}" CommandParameter="%" ToolTip="Percent"/>
+
+                    <!-- Row 1: Editing & Divide -->
+                    <Button Grid.Row="1" Grid.Column="0" Content="AC" Style="{DynamicResource ControlKeyStyle}"
+                            Command="{Binding InputCommand}" CommandParameter="AC" ToolTip="All clear"/>
+                    <Button Grid.Row="1" Grid.Column="1" Content="DEL" Style="{DynamicResource ControlKeyStyle}"
+                            Command="{Binding InputCommand}" CommandParameter="DEL" ToolTip="Delete character"/>
+                    <Button Grid.Row="1" Grid.Column="2" Content="S&#x21D4;D" Style="{DynamicResource ScienceKeyStyle}"
+                            Command="{Binding InputCommand}" CommandParameter="SD" ToolTip="Fraction to decimal toggle"/>
+                    <Button Grid.Row="1" Grid.Column="3" Content="&#x00F7;" Style="{DynamicResource OperatorKeyStyle}"
+                            Command="{Binding InputCommand}" CommandParameter="÷" ToolTip="Divide"/>
+
+                    <!-- Row 2: 7, 8, 9, × -->
+                    <Button Grid.Row="2" Grid.Column="0" Content="7" Style="{DynamicResource NumberKeyStyle}"
+                            Command="{Binding InputCommand}" CommandParameter="7"/>
+                    <Button Grid.Row="2" Grid.Column="1" Content="8" Style="{DynamicResource NumberKeyStyle}"
+                            Command="{Binding InputCommand}" CommandParameter="8"/>
+                    <Button Grid.Row="2" Grid.Column="2" Content="9" Style="{DynamicResource NumberKeyStyle}"
+                            Command="{Binding InputCommand}" CommandParameter="9"/>
+                    <Button Grid.Row="2" Grid.Column="3" Content="&#x00D7;" Style="{DynamicResource OperatorKeyStyle}"
+                            Command="{Binding InputCommand}" CommandParameter="×" ToolTip="Multiply"/>
+
+                    <!-- Row 3: 4, 5, 6, − -->
+                    <Button Grid.Row="3" Grid.Column="0" Content="4" Style="{DynamicResource NumberKeyStyle}"
+                            Command="{Binding InputCommand}" CommandParameter="4"/>
+                    <Button Grid.Row="3" Grid.Column="1" Content="5" Style="{DynamicResource NumberKeyStyle}"
+                            Command="{Binding InputCommand}" CommandParameter="5"/>
+                    <Button Grid.Row="3" Grid.Column="2" Content="6" Style="{DynamicResource NumberKeyStyle}"
+                            Command="{Binding InputCommand}" CommandParameter="6"/>
+                    <Button Grid.Row="3" Grid.Column="3" Content="&#x2212;" Style="{DynamicResource OperatorKeyStyle}"
+                            Command="{Binding InputCommand}" CommandParameter="−" ToolTip="Subtract"/>
+
+                    <!-- Row 4: 1, 2, 3, + -->
+                    <Button Grid.Row="4" Grid.Column="0" Content="1" Style="{DynamicResource NumberKeyStyle}"
+                            Command="{Binding InputCommand}" CommandParameter="1"/>
+                    <Button Grid.Row="4" Grid.Column="1" Content="2" Style="{DynamicResource NumberKeyStyle}"
+                            Command="{Binding InputCommand}" CommandParameter="2"/>
+                    <Button Grid.Row="4" Grid.Column="2" Content="3" Style="{DynamicResource NumberKeyStyle}"
+                            Command="{Binding InputCommand}" CommandParameter="3"/>
+                    <Button Grid.Row="4" Grid.Column="3" Content="+" Style="{DynamicResource OperatorKeyStyle}"
+                            Command="{Binding InputCommand}" CommandParameter="+" ToolTip="Add"/>
+
+                    <!-- Row 5: 0, ., Ans, = -->
+                    <Button Grid.Row="5" Grid.Column="0" Content="0" Style="{DynamicResource NumberKeyStyle}"
+                            Command="{Binding InputCommand}" CommandParameter="0"/>
+                    <Button Grid.Row="5" Grid.Column="1" Content="." Style="{DynamicResource NumberKeyStyle}"
+                            Command="{Binding InputCommand}" CommandParameter="."/>
+                    <Button Grid.Row="5" Grid.Column="2" Content="Ans" Style="{DynamicResource ScienceKeyStyle}"
+                            Command="{Binding InputCommand}" CommandParameter="Ans" ToolTip="Previous answer"/>
+                    <Button Grid.Row="5" Grid.Column="3" Content="=" Style="{DynamicResource OperatorKeyStyle}"
+                            Command="{Binding InputCommand}" CommandParameter="=" ToolTip="Calculate"/>
+                </Grid>
+
                 <!-- ========== ROW 4: FOOTER (curved base) ========== -->
-                <Border Grid.Row="4" Height="16" Margin="28,4,28,0"
+                <Border x:Name="FooterDecoration" Grid.Row="4" Height="16" Margin="28,4,28,0"
                         Background="#0D0F11" CornerRadius="0,0,120,120">
                     <Border.Effect>
                         <DropShadowEffect BlurRadius="6" ShadowDepth="0" Color="#000000" Opacity="0.18" Direction="0"/>

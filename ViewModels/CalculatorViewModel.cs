@@ -19,6 +19,13 @@ public class CalculatorViewModel : INotifyPropertyChanged
     private readonly StatisticsService _stats = new();
     private readonly BaseNService _baseN = new();
     private readonly TableService _table = new();
+    private readonly AppSettingsService _settingsService;
+    private static readonly string[] ThemeDisplayItemsCache = ThemeCatalog.All
+        .Select((theme, index) => $"{index + 1}:{theme.DisplayName}")
+        .ToArray();
+    private static readonly string[] SkinDisplayItemsCache = SkinCatalog.All
+        .Select((skin, index) => $"{index + 1}:{skin.DisplayName}")
+        .ToArray();
     private readonly System.Windows.Threading.DispatcherTimer _blinkTimer;
     private bool _showCaret = true;
     private string _expression = "";
@@ -63,6 +70,14 @@ public class CalculatorViewModel : INotifyPropertyChanged
     private bool _showThemesMenu;
     private int _themesSelectedIndex;
     private int _currentThemeIndex = 0;
+    private string _themeNumberBuffer = "";
+    private DateTime _themeNumberBufferUpdated;
+    private bool _showSkinsMenu;
+    private int _skinsSelectedIndex;
+    private int _currentSkinIndex;
+    private string _skinNumberBuffer = "";
+    private DateTime _skinNumberBufferUpdated;
+    private ResourceDictionary? _activeSkinResources;
     private int _historyIndex = -1;
     private readonly List<string> _history = new();
     private string _setupStatusText = "";
@@ -74,15 +89,21 @@ public class CalculatorViewModel : INotifyPropertyChanged
     private int _tablePage;
     private string _tableFunction = "";
 
-    public CalculatorViewModel()
+    public CalculatorViewModel() : this(new AppSettingsService())
     {
+    }
+
+    internal CalculatorViewModel(AppSettingsService settingsService)
+    {
+        _settingsService = settingsService;
         _engine.Memory = _memory;
+        _isCompactMode = _settingsService.LoadCompactMode();
         _engine.Angle = _angle;
         InputCommand = new RelayCommand(HandleInput);
 
         _blinkTimer = new System.Windows.Threading.DispatcherTimer
         {
-            Interval = TimeSpan.FromMilliseconds(500)
+            Interval = TimeSpan.FromMilliseconds(650)
         };
         _blinkTimer.Tick += (s, e) =>
         {
@@ -91,20 +112,33 @@ public class CalculatorViewModel : INotifyPropertyChanged
         };
         _blinkTimer.Start();
 
-        // Load saved theme
-        int savedTheme = 0;
-        try
+        string? savedThemeId = _settingsService.LoadThemeId();
+        int savedTheme = ThemeCatalog.IndexOfId(savedThemeId);
+        bool migrateOrRepairSettings = savedTheme < 0;
+
+        if (savedTheme < 0)
         {
-            string filePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "theme_setting.txt");
-            if (System.IO.File.Exists(filePath) && int.TryParse(System.IO.File.ReadAllText(filePath), out int idx))
-            {
-                savedTheme = Math.Clamp(idx, 0, 99);
-            }
+            int legacyIndex = _settingsService.LoadLegacyThemeIndex() ?? 0;
+            savedTheme = Math.Clamp(legacyIndex, 0, ThemeCatalog.All.Count - 1);
         }
-        catch { }
-        _currentThemeIndex = savedTheme;
-        _themesSelectedIndex = savedTheme;
-        SwitchTheme(savedTheme);
+
+        if (!SwitchTheme(savedTheme, persist: false))
+            SwitchTheme(0, persist: false);
+
+        if (migrateOrRepairSettings)
+            _settingsService.SaveThemeId(ThemeCatalog.All[_currentThemeIndex].Id);
+
+        string? savedSkinId = _settingsService.LoadSkinId();
+        int savedSkin = SkinCatalog.IndexOfId(savedSkinId);
+        bool repairSkinSetting = savedSkin < 0;
+        if (savedSkin < 0)
+            savedSkin = 0;
+
+        if (!SwitchSkin(savedSkin, persist: false))
+            SwitchSkin(0, persist: false);
+
+        if (repairSkinSetting)
+            _settingsService.SaveSkinId(SkinCatalog.All[_currentSkinIndex].Id);
     }
 
     // ============ Properties ============
@@ -113,23 +147,23 @@ public class CalculatorViewModel : INotifyPropertyChanged
     {
         get
         {
-            bool menuActive = ShowSetup || ShowConstants || ShowConversions || ShowThemesMenu || ShowAbout || _showStatsMenu;
+            bool menuActive = ShowSetup || ShowConstants || ShowConversions || ShowThemesMenu || ShowSkinsMenu || ShowAbout || _showStatsMenu;
             if (menuActive) return _expression;
 
             if (string.IsNullOrEmpty(_expression))
             {
-                return _showCaret ? "|" : " ";
+                return _showCaret ? "▏" : " ";
             }
             if (_showCaret && _cursorIndex >= 0 && _cursorIndex <= _expression.Length)
             {
-                return _expression.Insert(_cursorIndex, "|");
+                return _expression.Insert(_cursorIndex, "▏");
             }
             return _expression;
         }
         set
         {
             string val = value ?? "";
-            if (val.Contains("|")) val = val.Replace("|", "");
+            if (val.Contains('▏')) val = val.Replace("▏", "");
             _expression = val;
             OnPropertyChanged();
         }
@@ -232,10 +266,64 @@ public class CalculatorViewModel : INotifyPropertyChanged
     public bool ShowThemesMenu
     {
         get => _showThemesMenu;
-        set { _showThemesMenu = value; if (value) ThemesSelectedIndex = _currentThemeIndex; OnPropertyChanged(); }
+        set
+        {
+            _showThemesMenu = value;
+            _themeNumberBuffer = "";
+            if (value)
+            {
+                if (_showSkinsMenu)
+                {
+                    _showSkinsMenu = false;
+                    OnPropertyChanged(nameof(ShowSkinsMenu));
+                }
+                ThemesSelectedIndex = _currentThemeIndex;
+            }
+            OnPropertyChanged();
+        }
     }
 
-    public string ActiveThemeName => ThemeDisplayItems[_currentThemeIndex].Split(':')[1];
+    public string ActiveThemeName => ThemeCatalog.All[_currentThemeIndex].DisplayName;
+
+    public bool ShowSkinsMenu
+    {
+        get => _showSkinsMenu;
+        set
+        {
+            _showSkinsMenu = value;
+            _skinNumberBuffer = "";
+            if (value)
+            {
+                ShowThemesMenu = false;
+                SkinsSelectedIndex = _currentSkinIndex;
+            }
+            OnPropertyChanged();
+        }
+    }
+
+    public string ActiveSkinName => SkinCatalog.All[_currentSkinIndex].DisplayName;
+
+    public event Action<bool>? CompactModeChanged;
+    private bool _isCompactMode;
+    public bool IsCompactMode
+    {
+        get => _isCompactMode;
+        set
+        {
+            if (_isCompactMode != value)
+            {
+                _isCompactMode = value;
+                OnPropertyChanged();
+                CompactModeChanged?.Invoke(_isCompactMode);
+                _settingsService.SaveCompactMode(_isCompactMode);
+            }
+        }
+    }
+
+    public void ToggleCompactMode()
+    {
+        IsCompactMode = !IsCompactMode;
+    }
 
     public bool HasError
     {
@@ -271,32 +359,18 @@ public class CalculatorViewModel : INotifyPropertyChanged
     public int ThemesSelectedIndex
     {
         get => _themesSelectedIndex;
-        set { _themesSelectedIndex = Math.Clamp(value, 0, 99); OnPropertyChanged(); }
+        set { _themesSelectedIndex = Math.Clamp(value, 0, ThemeCatalog.All.Count - 1); OnPropertyChanged(); }
     }
 
-        public string[] ThemeDisplayItems => new[]
+    public string[] ThemeDisplayItems => ThemeDisplayItemsCache;
+
+    public int SkinsSelectedIndex
     {
-        "1:Charcoal Black", "2:Dark Gray", "3:AMOLED Dark", "4:Matte Black", "5:Carbon Gray",
-        "6:Titanium", "7:Classic Retro", "8:Midnight Blue", "9:Deep Forest", "10:Cyberpunk",
-        "11:White Marble", "12:Sakura", "13:Crimson Ruby", "14:Golden Luxury", "15:Deep Ocean",
-        "16:Chocolate Bronze", "17:Lavender", "18:Neon Matrix", "19:Solar Flare", "20:Royal Amethyst",
-        "21:Platinum Silver", "22:Copper Rust", "23:Terminal Amber", "24:Mint Ice", "25:Sandstone",
-        "26:Slate Blue", "27:Peach Cream", "28:Steel Metal", "29:Emerald Gold", "30:Royal Velvet",
-        "31:Vintage Beige", "32:Plum Wine", "33:Ocean Breeze", "34:Dark Violet", "35:Hot Pink",
-        "36:Mocha Latte", "37:Steel Blue", "38:Olive Drab", "39:Mustard Seed", "40:Coral Reef",
-        "41:Arctic Ice", "42:Sunset Orange", "43:Redwood Forest", "44:Teal Fusion", "45:Lilac Mist",
-        "46:Carbon Red", "47:Glacier Blue", "48:Grape Soda", "49:Lemon Drop", "50:Bronze Age",
-        "51:Turquoise Gem", "52:Orchid Blossom", "53:Silver Ice", "54:Ruby Wine", "55:Forest Moss",
-        "56:Rose Gold", "57:Sapphire Blue", "58:Warm Sand", "59:Lilac Sunset", "60:Deep Cyber",
-        "61:Vintage Terminal", "62:Aqua Dream", "63:Espresso Wood", "64:Platinum Gold", "65:Terracotta Rust",
-        "66:Ice Lavender", "67:Carbon Blue", "68:Sea Salt", "69:Plum Blush", "70:Desert Sage",
-        "71:Midnight Purple", "72:Pecan Cream", "73:Denim Blue", "74:Solar Eclipse", "75:Berry Blast",
-        "76:Eucalyptus Mint", "77:Pistachio Nut", "78:Cobalt Blue", "79:Vanilla Sky", "80:Pumpkin Spice",
-        "81:Polar Night", "82:Champagne Gold", "83:Mystic Orchid", "84:Steel Gray", "85:Candy Apple",
-        "86:Teal Breeze", "87:Burgundy Velvet", "88:Honey Glaze", "89:Urban Concrete", "90:Deep Velvet",
-        "91:Lime Spark", "92:Tangerine Glow", "93:Electric Violet", "94:Powder Blue", "95:Mauve Shadow",
-        "96:Emerald Velvet", "97:Soft Coral", "98:Carbon Pink", "99:Slate Jade", "100:Vintage Ivory"
-    };
+        get => _skinsSelectedIndex;
+        set { _skinsSelectedIndex = Math.Clamp(value, 0, SkinCatalog.All.Count - 1); OnPropertyChanged(); }
+    }
+
+    public string[] SkinDisplayItems => SkinDisplayItemsCache;
     public bool ShowStackedFraction => _resultDisplayMode == ResultDisplayMode.ImproperFraction || _resultDisplayMode == ResultDisplayMode.MixedFraction;
     public bool ShowFracWhole { get => _showFracWhole; set { _showFracWhole = value; OnPropertyChanged(); } }
     public string FracWholeDisplay { get => _fracWholeDisplay; set { _fracWholeDisplay = value; OnPropertyChanged(); } }
@@ -334,15 +408,21 @@ public class CalculatorViewModel : INotifyPropertyChanged
     public static readonly string[][] SetupPages = new[]
     {
         new[] { "COMP", "CMPLX", "STAT", "BASE-N", "EQN", "MATRIX", "TABLE", "VECTOR" },
-        new[] { "INEQ", "VERIF", "DIST", "THEME" }
+        new[] { "INEQ", "VERIF", "DIST", "THEME", "SKIN", "COMPACT" }
     };
 
     public static readonly string[][] AboutPages = new[]
     {
-        new[] { "About 1/3", "SmartCalculator", "Scientific Calculator", "Version: 1.0.0" },
+        new[] { "About 1/3", "SmartCalculator", "Scientific Calculator", $"Version: {GetProductVersion()}" },
         new[] { "About 2/3", "Developer: Ahmad Ibrahim", "License: MIT License", "Free & Open Source" },
         new[] { "About 3/3", "Framework: .NET 8 WPF", "Copyright: \u00a9 2026 Ahmad Ibrahim", "All rights reserved." }
     };
+
+    private static string GetProductVersion()
+    {
+        Version? version = typeof(CalculatorViewModel).Assembly.GetName().Version;
+        return version is null ? "3.0.0" : $"{version.Major}.{version.Minor}.{version.Build}";
+    }
 
     public bool ShowAbout
     {
@@ -400,6 +480,7 @@ public class CalculatorViewModel : INotifyPropertyChanged
         if (_showConstants) { HandleConstantsInput(input); return; }
         if (_showConversions) { HandleConversionsInput(input); return; }
         if (_showThemesMenu) { HandleThemesMenuInput(input); return; }
+        if (_showSkinsMenu) { HandleSkinsMenuInput(input); return; }
         if (_showHistory) { HandleHistoryInput(input); return; }
         if (_isStatsMode) { HandleStatsInput(input); return; }
         if (_isTableMode)
@@ -499,6 +580,8 @@ public class CalculatorViewModel : INotifyPropertyChanged
             case "Ans": InsertAtCursor("Ans"); break;
             case "PreAns": InsertAtCursor("PreAns"); break;
             case "×10^": InsertAtCursor("×10^"); break;
+            case "POW10": InsertAtCursor("10^("); break;
+            case "YROOT": InsertAtCursor("root("); break;
             case "exp": InsertAtCursor("exp("); break;
             case "abs": InsertAtCursor("abs("); break;
             case "fact": InsertAtCursor("!"); break;
@@ -516,7 +599,12 @@ public class CalculatorViewModel : INotifyPropertyChanged
 
             case "MODE": ToggleModeMenu(); break;
             case "ABOUT": ToggleAbout(); break;
-            case "THEME_CYCLE": _currentThemeIndex = (_currentThemeIndex + 1) % 100; SwitchTheme(_currentThemeIndex); break;
+            case "THEME_CYCLE": SwitchTheme((_currentThemeIndex + 1) % ThemeCatalog.All.Count); break;
+            case "SKIN_CYCLE": SwitchSkin((_currentSkinIndex + 1) % SkinCatalog.All.Count); break;
+            case "COMPACT":
+            case "COMPACT_TOGGLE":
+                ToggleCompactMode();
+                break;
 
             case "STO": HandleStore(); break;
             case "RCL": InsertAtCursor("Ans"); break;
@@ -581,7 +669,7 @@ public class CalculatorViewModel : INotifyPropertyChanged
             case "CMPLX": ActivateMode(CalculatorMode.CMPLX); SetupStatusText = "CMPLX"; ShowInfo("CMPLX"); break;
             case "MATRIX": ActivateMode(CalculatorMode.MATRIX); SetupStatusText = "MATRIX"; ShowInfo("MATRIX"); break;
             case "VECTOR": ActivateMode(CalculatorMode.VECTOR); SetupStatusText = "VECTOR"; ShowInfo("VECTOR"); break;
-            case "VERIFY": ShowInfo("VERIFY (Phase 2)"); break;
+            case "VERIFY": ShowInfo("VERIFY: not available in v3"); break;
             case "BASE": ActivateMode(CalculatorMode.BASE_N); ShowInfo("BASE-N"); break;
 
             case "CONST": ShowConstants = true; break;
@@ -594,7 +682,7 @@ public class CalculatorViewModel : INotifyPropertyChanged
             case "INS": _insertMode = !_insertMode; ShowInfo(_insertMode ? "INS" : "OVR"); break;
 
             case "CLR": ClearAll(); break;
-            case "OFF": ClearAll(); break;
+            case "OFF": Application.Current?.Shutdown(); break;
 
             default:
                 ShowNotAvailable();
@@ -700,13 +788,32 @@ public class CalculatorViewModel : INotifyPropertyChanged
         {
             var inner = expr[4..^1].Split(',');
             if (inner.Length == 2 && double.TryParse(inner[0], out var x) && double.TryParse(inner[1], out var y))
-            { double r = Math.Sqrt(x * x + y * y); double θ = _angle.ToRadians(Math.Atan2(y, x)); _memory.PushAns(r); ShowResult(r); return; }
+            {
+                double r = Math.Sqrt(x * x + y * y);
+                _memory.Store("Y", _angle.FromRadians(Math.Atan2(y, x)));
+                _memory.PushAns(r);
+                ShowResult(r);
+                return;
+            }
         }
         if (expr.StartsWith("Rec(") && expr.EndsWith(")"))
         {
             var inner = expr[4..^1].Split(',');
             if (inner.Length == 2 && double.TryParse(inner[0], out var r) && double.TryParse(inner[1], out var θ))
-            { double x = r * Math.Cos(_angle.ToRadians(θ)); _memory.PushAns(x); ShowResult(x); return; }
+            {
+                double radians = _angle.ToRadians(θ);
+                double x = r * Math.Cos(radians);
+                _memory.Store("Y", r * Math.Sin(radians));
+                _memory.PushAns(x);
+                ShowResult(x);
+                return;
+            }
+        }
+
+        if (expr.StartsWith("root(") && expr.EndsWith(")"))
+        {
+            HandleNthRoot(expr);
+            return;
         }
 
         // Handle ∫( integration
@@ -937,15 +1044,25 @@ public class CalculatorViewModel : INotifyPropertyChanged
             ActivateMode(_currentMode);
             return;
         }
-        if (_setupPage == 1 && int.TryParse(input, out int m) && m >= 1 && m <= 4)
+        if (_setupPage == 1 && int.TryParse(input, out int m) && m >= 1 && m <= 6)
         {
-            if (m == 1) { SetupInfoText = "Mode: INEQ"; SetupInfoVisible = true; ShowSetup = false; }
-            else if (m == 2) { SetupInfoText = "Mode: VERIF"; SetupInfoVisible = true; ShowSetup = false; }
-            else if (m == 3) { SetupInfoText = "Mode: DIST"; SetupInfoVisible = true; ShowSetup = false; }
-            else
+            if (m == 1) { SetupInfoText = "INEQ: not available in v3"; SetupInfoVisible = true; ShowSetup = false; }
+            else if (m == 2) { SetupInfoText = "VERIFY: not available in v3"; SetupInfoVisible = true; ShowSetup = false; }
+            else if (m == 3) { SetupInfoText = "DIST: not available in v3"; SetupInfoVisible = true; ShowSetup = false; }
+            else if (m == 4)
             {
                 ShowSetup = false;
                 ShowThemesMenu = true;
+            }
+            else if (m == 5)
+            {
+                ShowSetup = false;
+                ShowSkinsMenu = true;
+            }
+            else
+            {
+                ShowSetup = false;
+                ToggleCompactMode();
             }
             return;
         }
@@ -1091,76 +1208,39 @@ public class CalculatorViewModel : INotifyPropertyChanged
             ShowThemesMenu = false;
             return;
         }
-        if (int.TryParse(input, out int n) && n >= 1 && n <= total)
+        if (input.Length == 1 && char.IsDigit(input[0]))
         {
-            SwitchTheme(n - 1);
-            ShowThemesMenu = false;
+            if (DateTime.UtcNow - _themeNumberBufferUpdated > TimeSpan.FromSeconds(5))
+                _themeNumberBuffer = "";
+
+            _themeNumberBufferUpdated = DateTime.UtcNow;
+            _themeNumberBuffer += input;
+
+            if (int.TryParse(_themeNumberBuffer, out int n) && n >= 1 && n <= total)
+                ThemesSelectedIndex = n - 1;
+            else
+                _themeNumberBuffer = "";
+
             return;
         }
         if (input is "AC" or "ON") ShowThemesMenu = false;
     }
 
-    private void SwitchTheme(int index)
+    private bool SwitchTheme(int index, bool persist = true)
     {
-        _currentThemeIndex = index;
-        OnPropertyChanged(nameof(ActiveThemeName));
-        
-        try
-        {
-            string filePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "theme_setting.txt");
-            System.IO.File.WriteAllText(filePath, index.ToString());
-        }
-        catch { }
+        if (index < 0 || index >= ThemeCatalog.All.Count)
+            return false;
 
-        string themeFile;
-        if (index == 0)
-        {
-            themeFile = "/Styles/Theme.xaml";
-        }
-        else
-        {
-            string[] themeNames = new[]
-            {
-                "DarkGray", "AMOLED", "MatteBlack", "CarbonGray", "Titanium", "ClassicRetro", "MidnightBlue",
-                "DeepForest", "Cyberpunk", "WhiteMarble", "Sakura", "CrimsonRuby",
-                "GoldenLuxury", "DeepOcean", "ChocolateBronze", "Lavender", "NeonMatrix",
-                "SolarFlare", "RoyalAmethyst", "PlatinumSilver", "CopperRust", "TerminalAmber",
-                "MintIce", "Sandstone", "SlateBlue", "PeachCream", "SteelMetal",
-                "EmeraldGold", "RoyalVelvet", "VintageBeige", "PlumWine", "OceanBreeze",
-                "DarkViolet", "HotPink", "MochaLatte", "SteelBlue", "OliveDrab",
-                "MustardSeed", "CoralReef", "ArcticIce", "SunsetOrange", "RedwoodForest",
-                "TealFusion", "LilacMist", "CarbonRed", "GlacierBlue", "GrapeSoda",
-                "LemonDrop", "BronzeAge", "TurquoiseGem", "OrchidBlossom", "SilverIce",
-                "RubyWine", "ForestMoss", "RoseGold", "SapphireBlue", "WarmSand",
-                "LilacSunset", "DeepCyber", "VintageTerminal", "AquaDream", "EspressoWood",
-                "PlatinumGold", "TerracottaRust", "IceLavender", "CarbonBlue", "SeaSalt",
-                "PlumBlush", "DesertSage", "MidnightPurple", "PecanCream", "DenimBlue",
-                "SolarEclipse", "BerryBlast", "EucalyptusMint", "PistachioNut", "CobaltBlue",
-                "VanillaSky", "PumpkinSpice", "PolarNight", "ChampagneGold", "MysticOrchid",
-                "SteelGray", "CandyApple", "TealBreeze", "BurgundyVelvet", "HoneyGlaze",
-                "UrbanConcrete", "DeepVelvet", "LimeSpark", "TangerineGlow", "ElectricViolet",
-                "PowderBlue", "MauveShadow", "EmeraldVelvet", "SoftCoral", "CarbonPink",
-                "SlateJade", "VintageIvory"
-            };
-            int arrayIdx = index - 1;
-            if (arrayIdx >= 0 && arrayIdx < themeNames.Length)
-            {
-                themeFile = $"/Styles/Theme{index}-{themeNames[arrayIdx]}.xaml";
-            }
-            else
-            {
-                themeFile = "/Styles/Theme.xaml";
-            }
-        }
+        var selectedTheme = ThemeCatalog.All[index];
 
         try
         {
             var app = Application.Current;
-            if (app == null) return;
+            if (app == null) return false;
 
             var dict = new ResourceDictionary
             {
-                Source = new Uri(themeFile, UriKind.RelativeOrAbsolute)
+                Source = new Uri(selectedTheme.ResourcePath, UriKind.RelativeOrAbsolute)
             };
 
             var merged = app.Resources.MergedDictionaries;
@@ -1173,11 +1253,93 @@ public class CalculatorViewModel : INotifyPropertyChanged
                     i--;
                 }
             }
-            merged.Add(dict);
+            merged.Insert(0, dict);
+
+            _currentThemeIndex = index;
+            ThemesSelectedIndex = index;
+            OnPropertyChanged(nameof(ActiveThemeName));
+
+            if (persist && !_settingsService.SaveThemeId(selectedTheme.Id))
+                System.Diagnostics.Debug.WriteLine("Theme applied, but its preference could not be saved.");
+
+            return true;
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"Failed to load theme: {ex.Message}");
+            return false;
+        }
+    }
+
+    private void HandleSkinsMenuInput(string input)
+    {
+        int total = SkinDisplayItems.Length;
+        if (input is "UP")
+        {
+            SkinsSelectedIndex = (SkinsSelectedIndex - 1 + total) % total;
+            return;
+        }
+        if (input is "DOWN")
+        {
+            SkinsSelectedIndex = (SkinsSelectedIndex + 1) % total;
+            return;
+        }
+        if (input is "=" or "CALC" or "NAV")
+        {
+            SwitchSkin(SkinsSelectedIndex);
+            ShowSkinsMenu = false;
+            return;
+        }
+        if (input.Length == 1 && char.IsDigit(input[0]))
+        {
+            if (DateTime.UtcNow - _skinNumberBufferUpdated > TimeSpan.FromSeconds(5))
+                _skinNumberBuffer = "";
+
+            _skinNumberBufferUpdated = DateTime.UtcNow;
+            _skinNumberBuffer += input;
+
+            if (int.TryParse(_skinNumberBuffer, out int n) && n >= 1 && n <= total)
+                SkinsSelectedIndex = n - 1;
+            else
+                _skinNumberBuffer = "";
+
+            return;
+        }
+        if (input is "AC" or "ON") ShowSkinsMenu = false;
+    }
+
+    private bool SwitchSkin(int index, bool persist = true)
+    {
+        if (index < 0 || index >= SkinCatalog.All.Count)
+            return false;
+
+        var selectedSkin = SkinCatalog.All[index];
+
+        try
+        {
+            var app = Application.Current;
+            if (app == null) return false;
+
+            var resources = SkinCatalog.CreateResources(selectedSkin);
+            var merged = app.Resources.MergedDictionaries;
+            if (_activeSkinResources != null)
+                merged.Remove(_activeSkinResources);
+            merged.Add(resources);
+            _activeSkinResources = resources;
+
+            _currentSkinIndex = index;
+            SkinsSelectedIndex = index;
+            OnPropertyChanged(nameof(ActiveSkinName));
+
+            if (persist && !_settingsService.SaveSkinId(selectedSkin.Id))
+                System.Diagnostics.Debug.WriteLine("Skin applied, but its preference could not be saved.");
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to load skin: {ex.Message}");
+            return false;
         }
     }
 
@@ -1699,6 +1861,42 @@ public class CalculatorViewModel : INotifyPropertyChanged
             ShowResult(_memory.Ans);
         }
         else { ShowInfo("RanInt(a,b)"); }
+    }
+
+    private void HandleNthRoot(string expr)
+    {
+        try
+        {
+            string inner = expr[5..^1];
+            int commaPosition = -1;
+            int depth = 0;
+
+            for (int i = 0; i < inner.Length; i++)
+            {
+                if (inner[i] == '(') depth++;
+                else if (inner[i] == ')') depth--;
+                else if (inner[i] == ',' && depth == 0)
+                {
+                    commaPosition = i;
+                    break;
+                }
+            }
+
+            if (commaPosition < 0)
+                throw new CalculatorException("Use root(value,index)");
+
+            double value = _engine.Evaluate(inner[..commaPosition].Trim());
+            double degree = _engine.Evaluate(inner[(commaPosition + 1)..].Trim());
+            double result = ScientificFunctions.NthRoot(value, degree);
+            _memory.PushAns(result);
+            ShowResult(result);
+        }
+        catch (Exception)
+        {
+            ResultText = "Math Error";
+            ResultBrush = new(Color.FromRgb(0x7B, 0x2D, 0x2D));
+            HasError = true;
+        }
     }
 
     private void HandleIntFunction(string expr)

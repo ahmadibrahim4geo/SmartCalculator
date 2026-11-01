@@ -10,7 +10,7 @@
 | **NAV ▼** | Show direction, navigate history down / menu down | Working |
 | **NAV ◀** | Move cursor left in expression | Working |
 | **NAV ▶** | Move cursor right in expression | Working |
-| **MODE** | Opens/closes SETUP menu inside LCD. Use number keys or ◀▶ to navigate pages. | Working |
+| **MODE** | Opens/closes SETUP inside the LCD. Use ◀▶ for pages; page 2 includes `4:THEME` and `5:SKIN`. | Working |
 | **ON** | Clears all (same as AC). | Working |
 
 ## Command Strip (4 keys)
@@ -18,9 +18,9 @@
 | Key | Shift | Alpha | Function | Status |
 |-----|-------|-------|----------|--------|
 | **CALC** | SOLVE | — | Evaluate expression (=) / SHIFT inserts `solve(` | Working |
-| **∫** (integral) | **d/dx** | • | Insert `∫(f(X),a,b)` / `d/dx(f(X),a)` (shift) | Working (numeric integral/derivative) |
+| **∫** (integral) | **d/dx** | — | Insert `∫(f(X),a,b)` / `d/dx(f(X),a)` (shift) | Working (numeric integral/derivative) |
 | **x⁻¹** | **x!** | — | Compute 1/result / Insert `!` (shift) | Working |
-| **log□** | **Σ** | ▥ | Insert `log(` / `Σ(f(X),start,end)` (shift) | Working |
+| **log□** | **Σ** | — | Insert `log(` / `Σ(f(X),start,end)` (shift) | Working |
 
 ## Scientific Grid Row 1
 
@@ -29,8 +29,8 @@
 | **□/□** (fraction) | a b/c | d/c | Toggle fraction display (same as S⇔D) | Partial (fraction entry deferred) |
 | **√** | **∛** | i | Insert `√(` / `∛(` (shift) | Working |
 | **x²** | x³ | DEC | Insert `^2` / `^3` (shift) / Switch base to DEC (alpha, in BASE-N mode) | Working |
-| **xʸ** | ʸ√x | HEX | Insert ` ^ ` / Switch base to HEX (alpha, in BASE-N mode) | Working (ʸ√x deferred) |
-| **log** | 10ˣ | BIN | Insert `log(` / `×10^` (shift) / Switch base to BIN (alpha, in BASE-N mode) | Working |
+| **xʸ** | ʸ√x | HEX | Insert ` ^ ` / `root(value,index)` (shift) / Switch base to HEX (alpha, in BASE-N mode) | Working |
+| **log** | 10ˣ | BIN | Insert `log(` / `10^(` (shift) / Switch base to BIN (alpha, in BASE-N mode) | Working |
 | **ln** | eˣ | OCT | Insert `ln(` / `exp(` (shift) / Switch base to OCT (alpha, in BASE-N mode) | Working |
 
 ## Scientific Grid Row 2
@@ -38,7 +38,7 @@
 | Key | Shift | Alpha | Function | Status |
 |-----|-------|-------|----------|--------|
 | **−** (unary) | ← | A | Insert `-` / cursor left (shift) / variable A (alpha) | Working |
-| **DMS** | FACT | B | Convert to DMS / insert `!` (shift) / variable B (alpha) | Working |
+| **DMS** | x! | B | Convert to DMS / insert `!` (shift) / variable B (alpha) | Working |
 | **hyp** | Abs | C | Toggle HYP mode / insert `abs(` (shift) / variable C (alpha) | Working |
 | **sin** | sin⁻¹ | D | Insert `sin(` / `asin(` (shift) / variable D (alpha) | Working |
 | **cos** | cos⁻¹ | E | Insert `cos(` / `acos(` (shift) / variable E (alpha) | Working |
@@ -63,7 +63,7 @@
 | **8** | **CONV** | — | Digit 8 / conversions menu (shift) | Working |
 | **9** | **CLR** | — | Digit 9 / clear all (shift) | Working |
 | **DEL** | **INS** | — | Delete character before cursor / toggle insert/overwrite (shift) | Working |
-| **AC** | **OFF** | — | Clear all / off (shift, same as AC) | Working |
+| **AC** | **OFF** | — | Clear all / close the application (shift) | Working |
 
 ## Numeric Grid Row 2
 
@@ -71,7 +71,7 @@
 |-----|-------|-------|----------|--------|
 | **4** | MATRIX | — | Digit 4 / Activate MATRIX mode (shift) | Working |
 | **5** | VECTOR | — | Digit 5 / Activate VECTOR mode (shift) | Working |
-| **6** | VERIFY | — | Digit 6 | Working (VERIFY → info, Phase 2) |
+| **6** | VERIFY | — | Digit 6 / clear unavailable-feature notice (shift) | VERIFY unavailable in v3 |
 | **×** | nPr | GCD | Multiply / ` nPr ` (shift) / ` gcd(` (alpha) | Working |
 | **÷** | nCr | LCM | Divide / ` nCr ` (shift) / ` lcm(` (alpha) | Working |
 
@@ -107,7 +107,7 @@
 | **MATRIX** | Matrix calculations (2×2, 3×3, add, sub, mul, det, transpose, inv) | Working |
 | **TABLE** | Function table (f(X) with start/end/step) | Working |
 | **VECTOR** | Vector calculations (2D/3D: +, −, ×, dot, cross, mag, unit) | Working |
-| **INEQ/VERIF/DIST** | Inequality / verification / distributions | Phase 2 |
+| **INEQ/VERIF/DIST** | Inequality / verification / distributions | Planned; clearly marked unavailable in v3 |
 | **DEG** | Degrees (angle mode) | Working |
 | **RAD** | Radians (angle mode) | Working |
 | **GRAD** | Gradians (angle mode) | Working |
@@ -344,8 +344,6 @@
 ## Known Limitations
 
 ### Deferred
-- **SOLVE** — equation solving (CALC shift)
-- **ʸ√x** — y-th root (xʸ shift)
 - **VERIFY, INEQ, DIST** — remaining mode shortcuts and calculations
 
 ### BASE-N Mode

@@ -10,10 +10,41 @@ namespace SmartCalculator
 {
     public partial class MainWindow : Window
     {
+        private const double FullWindowWidth = 444;
+        private const double FullWindowHeight = 854;
+        private const double CompactWindowWidth = 380;
+        private const double CompactWindowHeight = 540;
+        private bool _isCompactMode;
+        private Rect _fullWindowBounds;
+        private readonly Services.AppSettingsService _settingsService = new();
+
         public MainWindow()
         {
             InitializeComponent();
-            DataContext = new CalculatorViewModel();
+            var vm = new CalculatorViewModel();
+            DataContext = vm;
+
+            vm.CompactModeChanged += isCompact =>
+            {
+                if (isCompact)
+                    EnterCompactMode();
+                else
+                    ExitCompactMode();
+            };
+
+            // Restore Always-on-Top preference
+            Topmost = _settingsService.LoadAlwaysOnTop();
+            if (PinButton != null)
+            {
+                PinButton.Tag = Topmost ? "Pinned" : null;
+                PinButton.ToolTip = Topmost ? "Always on Top: On (Click to unpin)" : "Always on Top: Off (Click to pin window)";
+            }
+
+            // Restore Compact mode preference
+            if (vm.IsCompactMode)
+            {
+                EnterCompactMode();
+            }
         }
 
         private void HeaderDragArea_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -53,23 +84,82 @@ namespace SmartCalculator
             Close();
         }
 
+        private void CompactButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is CalculatorViewModel vm)
+            {
+                vm.ToggleCompactMode();
+            }
+            else
+            {
+                if (_isCompactMode)
+                    ExitCompactMode();
+                else
+                    EnterCompactMode();
+            }
+        }
+
+        private void EnterCompactMode()
+        {
+            if (!_isCompactMode)
+                _fullWindowBounds = new Rect(Left, Top, ActualWidth, ActualHeight);
+
+            _isCompactMode = true;
+
+            FullKeypad.Visibility = Visibility.Collapsed;
+            CompactKeypad.Visibility = Visibility.Visible;
+            TopControls.Visibility = Visibility.Collapsed;
+            FooterDecoration.Visibility = Visibility.Collapsed;
+
+            // BrandSubtitle MUST stay visible in compact mode as requested
+            BrandSubtitle.Visibility = Visibility.Visible;
+            HeaderToolButtons.Visibility = Visibility.Collapsed;
+            DeveloperLogo.Visibility = Visibility.Visible;
+            DeveloperLogo.Height = 52;
+
+            HeaderRow.Height = new GridLength(60);
+            DisplayRow.Height = new GridLength(110);
+            ControlsRow.Height = new GridLength(0);
+            FooterRow.Height = new GridLength(0);
+
+            Width = CompactWindowWidth;
+            Height = CompactWindowHeight;
+            CompactButton.Content = "⤢";
+            CompactButton.ToolTip = "Full mode: Restore the scientific calculator (Ctrl+M)";
+        }
+
+        private void ExitCompactMode()
+        {
+            _isCompactMode = false;
+
+            CompactKeypad.Visibility = Visibility.Collapsed;
+            FullKeypad.Visibility = Visibility.Visible;
+            TopControls.Visibility = Visibility.Visible;
+            FooterDecoration.Visibility = Visibility.Visible;
+
+            BrandSubtitle.Visibility = Visibility.Visible;
+            HeaderToolButtons.Visibility = Visibility.Visible;
+            DeveloperLogo.Visibility = Visibility.Visible;
+            DeveloperLogo.Height = 76;
+
+            HeaderRow.Height = new GridLength(82);
+            DisplayRow.Height = new GridLength(120);
+            ControlsRow.Height = new GridLength(84);
+            FooterRow.Height = new GridLength(18);
+
+            Width = _fullWindowBounds.Width > 0 ? _fullWindowBounds.Width : FullWindowWidth;
+            Height = _fullWindowBounds.Height > 0 ? _fullWindowBounds.Height : FullWindowHeight;
+            CompactButton.Content = "⤡";
+            CompactButton.ToolTip = "Compact mode: Show essential calculator controls (Ctrl+M)";
+        }
+
         private void PinButton_Click(object sender, RoutedEventArgs e)
         {
             Topmost = !Topmost;
             if (PinButton == null) return;
-
-            if (Topmost)
-            {
-                PinButton.Content = "\U0001F4CD";
-                PinButton.Foreground = Brushes.White;
-                PinButton.Background = new SolidColorBrush(Color.FromArgb(0x30, 0xFF, 0xFF, 0xFF));
-            }
-            else
-            {
-                PinButton.Content = "\U0001F4CC";
-                PinButton.Foreground = new SolidColorBrush(Color.FromRgb(0xC9, 0xCD, 0xD2));
-                PinButton.Background = new SolidColorBrush(Color.FromArgb(0x0D, 0xFF, 0xFF, 0xFF));
-            }
+            PinButton.Tag = Topmost ? "Pinned" : null;
+            PinButton.ToolTip = Topmost ? "Always on Top: On (Click to unpin)" : "Always on Top: Off (Click to pin window)";
+            _settingsService.SaveAlwaysOnTop(Topmost);
         }
 
         private void ListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -82,6 +172,8 @@ namespace SmartCalculator
 
         private System.Windows.Threading.DispatcherTimer? _longPressTimer;
         private bool _isLongPress = false;
+        private System.Windows.Threading.DispatcherTimer? _skinLongPressTimer;
+        private bool _isSkinLongPress;
 
         private void ThemeButton_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
@@ -124,13 +216,55 @@ namespace SmartCalculator
             _isLongPress = false;
         }
 
+        private void SkinButton_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            _isSkinLongPress = false;
+            if (_skinLongPressTimer == null)
+            {
+                _skinLongPressTimer = new System.Windows.Threading.DispatcherTimer
+                {
+                    Interval = TimeSpan.FromMilliseconds(500)
+                };
+                _skinLongPressTimer.Tick += (s, ev) =>
+                {
+                    _skinLongPressTimer.Stop();
+                    _isSkinLongPress = true;
+                    if (DataContext is CalculatorViewModel vm)
+                        vm.ShowSkinsMenu = true;
+                };
+            }
+            _skinLongPressTimer.Start();
+        }
+
+        private void SkinButton_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            if (_skinLongPressTimer != null && _skinLongPressTimer.IsEnabled)
+                _skinLongPressTimer.Stop();
+
+            if (!_isSkinLongPress && DataContext is CalculatorViewModel vm &&
+                vm.InputCommand.CanExecute("SKIN_CYCLE"))
+            {
+                vm.InputCommand.Execute("SKIN_CYCLE");
+            }
+            _isSkinLongPress = false;
+        }
+
         private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             var vm = DataContext as CalculatorViewModel;
             if (vm == null) return;
 
-            string? param = null;
             Key k = e.Key;
+
+            // Global shortcut: Ctrl+M toggles Compact mode
+            if (k == Key.M && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+            {
+                vm.ToggleCompactMode();
+                e.Handled = true;
+                return;
+            }
+
+            string? param = null;
 
             if (k == Key.D0 || k == Key.NumPad0) param = "0";
             else if (k == Key.D1 || k == Key.NumPad1) param = "1";
@@ -157,7 +291,7 @@ namespace SmartCalculator
             else if (k == Key.OemCloseBrackets && (Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift) param = ")";
             else if (k == Key.Enter || k == Key.Return)
             {
-                if (vm.ShowThemesMenu || vm.ShowConstants || vm.ShowConversions)
+                if (vm.ShowThemesMenu || vm.ShowSkinsMenu || vm.ShowConstants || vm.ShowConversions)
                 {
                     param = "NAV";
                     DpadNav.Tag = "KeyboardPressed";

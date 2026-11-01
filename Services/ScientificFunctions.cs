@@ -41,4 +41,27 @@ public static class ScientificFunctions
     public static double Ran() => _rng.NextDouble();
     public static int RanInt(int a, int b) => _rng.Next(a, b + 1);
     public static double Rnd(double v, int decimals) => Math.Round(v, decimals);
+
+    public static double NthRoot(double value, double degree)
+    {
+        if (degree == 0 || (value == 0 && degree < 0))
+            throw new ArgumentException("Invalid root");
+
+        double roundedDegree = Math.Round(degree);
+        bool degreeIsInteger = Math.Abs(degree - roundedDegree) < 1e-12;
+
+        if (value < 0)
+        {
+            if (!degreeIsInteger || Math.Abs((long)roundedDegree) % 2 == 0)
+                throw new ArgumentException("Even root of a negative number is not real");
+
+            return -Math.Pow(-value, 1.0 / degree);
+        }
+
+        double result = Math.Pow(value, 1.0 / degree);
+        if (double.IsNaN(result) || double.IsInfinity(result))
+            throw new ArgumentException("Invalid root");
+
+        return result;
+    }
 }

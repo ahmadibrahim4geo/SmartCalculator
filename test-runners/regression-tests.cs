@@ -1,5 +1,6 @@
 using SmartCalculator.Models;
 using SmartCalculator.Services;
+using System.IO;
 
 int passed = 0, failed = 0;
 void T(string n, string a, string e) { if (a == e) { passed++; } else { failed++; Console.WriteLine($"  FAIL: {n} - expected '{e}', got '{a}'"); } }
@@ -276,6 +277,111 @@ solveEngine.Angle!.CurrentMode = AngleMode.DEG;
 // Error cases — div by zero during iteration should throw
 try { EquationSolverService.Solve(x => { double z = 0; return 1 / z; }, 0); failed++; Console.WriteLine("  FAIL: div by zero should throw"); }
 catch { passed++; }
+
+// ============ V3 CORE CORRECTIONS ============
+Console.WriteLine("\n=== V3 Core Corrections ===");
+Td("cube root negative", engine.Evaluate("∛(-8)"), -2);
+Td("fifth root negative", ScientificFunctions.NthRoot(-32, 5), -2);
+Td("fourth root", ScientificFunctions.NthRoot(81, 4), 3);
+try { ScientificFunctions.NthRoot(-16, 4); failed++; Console.WriteLine("  FAIL: even root of negative should throw"); }
+catch { passed++; }
+try { engine.Evaluate("2@+3"); failed++; Console.WriteLine("  FAIL: unknown character should throw syntax error"); }
+catch (CalculatorException) { passed++; }
+
+// ============ KEY MAP AUDIT ============
+Console.WriteLine("\n=== Key Map Audit ===");
+foreach (var pair in KeyMaps.AllKeys)
+{
+    var definition = pair.Value;
+    if (definition.ShiftAction is not null)
+        Tb($"SHIFT mapping {pair.Key}", KeyMaps.ShiftMap.TryGetValue(definition.CommandParameter, out string? action) && action == definition.ShiftAction);
+    if (definition.AlphaAction is not null)
+        Tb($"ALPHA mapping {pair.Key}", KeyMaps.AlphaMap.TryGetValue(definition.CommandParameter, out string? action) && action == definition.AlphaAction);
+}
+T("SHIFT xʸ action", KeyMaps.ShiftMap["xʸ"], "YROOT");
+T("SHIFT log action", KeyMaps.ShiftMap["log"], "POW10");
+T("SHIFT ENG action", KeyMaps.ShiftMap["ENG"], "LEFT");
+
+// ============ THEME CATALOG & SETTINGS ============
+Console.WriteLine("\n=== Theme Catalog & Settings ===");
+T("theme count", ThemeCatalog.All.Count.ToString(), "130");
+T("unique theme ids", ThemeCatalog.All.Select(t => t.Id).Distinct(StringComparer.OrdinalIgnoreCase).Count().ToString(), ThemeCatalog.All.Count.ToString());
+T("unique theme names", ThemeCatalog.All.Select(t => t.DisplayName).Distinct(StringComparer.OrdinalIgnoreCase).Count().ToString(), ThemeCatalog.All.Count.ToString());
+T("unique theme paths", ThemeCatalog.All.Select(t => t.ResourcePath).Distinct(StringComparer.OrdinalIgnoreCase).Count().ToString(), ThemeCatalog.All.Count.ToString());
+T("last v3 theme", ThemeCatalog.All[^1].DisplayName, "Monochrome Pro");
+
+Console.WriteLine("\n=== Skin Catalog & Setup ===");
+T("skin count", SkinCatalog.All.Count.ToString(), "20");
+T("unique skin ids", SkinCatalog.All.Select(s => s.Id).Distinct(StringComparer.OrdinalIgnoreCase).Count().ToString(), SkinCatalog.All.Count.ToString());
+T("unique skin names", SkinCatalog.All.Select(s => s.DisplayName).Distinct(StringComparer.OrdinalIgnoreCase).Count().ToString(), SkinCatalog.All.Count.ToString());
+T("unique skin visual signatures", SkinCatalog.All
+    .Select(s => $"{s.KeyGeometry}|{s.NavigatorGeometry}|{s.BorderWidth}|{s.InnerBorderWidth}|{s.ShadowBlur}|{s.HighlightAlpha}|{s.MarginX}")
+    .Distinct(StringComparer.Ordinal).Count().ToString(), SkinCatalog.All.Count.ToString());
+T("default skin", SkinCatalog.All[0].DisplayName, "Classic Scientific");
+T("last skin", SkinCatalog.All[^1].DisplayName, "High Contrast");
+foreach (var skin in SkinCatalog.All)
+{
+    var resources = SkinCatalog.CreateResources(skin);
+    Tb($"skin resources {skin.Id}",
+        resources.Contains("SkinKeyCornerRadius") &&
+        resources.Contains("SkinNavigatorCornerRadius") &&
+        resources.Contains("SkinKeyEffect"));
+}
+
+string projectRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", ".."));
+string stylesDirectory = Path.Combine(projectRoot, "Styles");
+string viewModelSource = File.ReadAllText(Path.Combine(projectRoot, "ViewModels", "CalculatorViewModel.cs"));
+Tb("setup includes item 6 compact", viewModelSource.Contains("{ \"INEQ\", \"VERIF\", \"DIST\", \"THEME\", \"SKIN\", \"COMPACT\" }"));
+Tb("setup accepts option 6", viewModelSource.Contains("m >= 1 && m <= 6"));
+var themeFiles = Directory.GetFiles(stylesDirectory, "*.xaml");
+T("no orphan theme files", themeFiles.Length.ToString(), ThemeCatalog.All.Count.ToString());
+
+string baselineText = File.ReadAllText(Path.Combine(stylesDirectory, "Theme.xaml"));
+var keyRegex = new System.Text.RegularExpressions.Regex("x:Key=\\\"([^\\\"]+)\\\"");
+var hexRegex = new System.Text.RegularExpressions.Regex("#[0-9A-Fa-f]{6,8}");
+var baselineKeys = keyRegex.Matches(baselineText).Select(match => match.Groups[1].Value).Distinct().OrderBy(value => value).ToArray();
+var paletteSignatures = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+foreach (var theme in ThemeCatalog.All)
+{
+    string relativePath = theme.ResourcePath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar);
+    string themePath = Path.Combine(projectRoot, relativePath);
+    Tb($"theme exists {theme.Id}", File.Exists(themePath));
+    string themeText = File.ReadAllText(themePath);
+    try { System.Xml.Linq.XDocument.Parse(themeText); passed++; }
+    catch { failed++; Console.WriteLine($"  FAIL: invalid theme XML {theme.Id}"); }
+
+    var keys = keyRegex.Matches(themeText).Select(match => match.Groups[1].Value).Distinct().OrderBy(value => value).ToArray();
+    Tb($"theme resources {theme.Id}", baselineKeys.SequenceEqual(keys));
+    string paletteSection = themeText.Split("<!-- ============== BRUSHES", StringSplitOptions.None)[0];
+    string signature = string.Join('|', hexRegex.Matches(paletteSection).Select(match => match.Value.ToUpperInvariant()));
+    Tb($"unique palette {theme.Id}", paletteSignatures.Add(signature));
+}
+
+string settingsTestDirectory = Path.Combine(Path.GetTempPath(), "SmartCalculator-v3-tests-" + Guid.NewGuid().ToString("N"));
+try
+{
+    string legacyPath = Path.Combine(settingsTestDirectory, "legacy-theme.txt");
+    var settings = new AppSettingsService(settingsTestDirectory, legacyPath);
+    Tb("save theme preference", settings.SaveThemeId("aurora-borealis"));
+    T("load theme preference", settings.LoadThemeId() ?? "", "aurora-borealis");
+    Tb("save skin preference", settings.SaveSkinId("mechanical-keycap"));
+    T("load skin preference", settings.LoadSkinId() ?? "", "mechanical-keycap");
+    T("skin save preserves theme", settings.LoadThemeId() ?? "", "aurora-borealis");
+    Tb("update theme preference", settings.SaveThemeId("obsidian-gold"));
+    T("theme save preserves skin", settings.LoadSkinId() ?? "", "mechanical-keycap");
+    Tb("save compact preference", settings.SaveCompactMode(true));
+    Tb("load compact preference", settings.LoadCompactMode());
+    Tb("save topmost preference", settings.SaveAlwaysOnTop(true));
+    Tb("load topmost preference", settings.LoadAlwaysOnTop());
+    File.WriteAllText(legacyPath, "129");
+    T("load legacy theme index", settings.LoadLegacyThemeIndex()?.ToString() ?? "", "129");
+}
+finally
+{
+    if (Directory.Exists(settingsTestDirectory))
+        Directory.Delete(settingsTestDirectory, true);
+}
 
 Console.WriteLine($"\n========================================");
 Console.WriteLine($"RESULTS: {passed} passed, {failed} failed");

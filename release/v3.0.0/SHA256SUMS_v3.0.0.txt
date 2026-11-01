@@ -1,0 +1,2 @@
+1b9221170e9e76a3f7189acfe75e220993cbbc20f4a0b25065439355ebeaf974  SmartCalculator_Setup_v3.0.0.exe
+00eb92c0893ad7aecddc936f8f9864a05411289c4a7e0cf4c4ddd2c9af4c851e  SmartCalculator_Portable_v3.0.0.zip
